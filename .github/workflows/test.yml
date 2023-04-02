@@ -1,6 +1,8 @@
 name: Generate tag
 
 on:
+  push:
+  pull_request:
   workflow_dispatch:
     inputs:
       channel:
@@ -24,13 +26,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
 
     steps:
       - name: Checkout branch
         uses: actions/checkout@v3
         with:
-          ref: "releases/v1"
+          ref: "releases/v1.0.0"
 
       - name: Generate tag name
         uses: ./
