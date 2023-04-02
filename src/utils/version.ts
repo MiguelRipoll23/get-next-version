@@ -49,7 +49,7 @@ async function getNewVersionName(tagName: string) {
 
   core.debug("Bump kind: " + kind);
 
-  const channel = core.getInput(CHANNEL, { required: true });
+  const channel = core.getInput(CHANNEL, { required: false });
 
   switch (kind) {
     case MAJOR:
