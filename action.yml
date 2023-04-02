@@ -1,0 +1,31 @@
+name: "Generate Tag Name"
+description: "Generate tag names with the help of semantic versioning and pull requests labels."
+author: "MiguelRipoll23"
+inputs:
+  github-token:
+    description: "Token from GitHub Actions or a Personal Access Token."
+    default: ${{ github.token }}
+
+  channel:
+    description: "Target channel (alpha/beta/stable/custom) of the version."
+    default: "stable"
+
+  new-build-for-prerelease:
+    default: "true"
+    description: "Create a new build if version name contains a prerelease identifier."
+
+  major-labels:
+    description: "Comma separated list of labels for major releases."
+    default: "breaking-change"
+
+  minor-labels:
+    description: "Comma separated list of labels for minor releases."
+    default: "feature,enhancement"
+
+  patch-labels:
+    description: "Comma separated list of labels for patch releases."
+    default: "bugfix"
+
+runs:
+  using: "node16"
+  main: "dist/index.js"

@@ -1,0 +1,42 @@
+name: Generate tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        required: true
+        description: Pick channel
+        type: choice
+        options:
+          - alpha
+          - beta
+          - stable
+
+      new-build-for-prerelease:
+        required: false
+        default: true
+        type: boolean
+        description: New build for prerelease
+
+jobs:
+  generate-tag:
+    name: Generate tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+        with:
+          ref: "releases/v1"
+
+      - name: Generate tag name
+        uses: ./
+        id: generate-tag-name
+        with:
+          channel: ${{ inputs.channel }}
+
+      - name: Log generated tag name
+        run: echo ${{ steps.generate-tag-name.outputs.tag-name }}
