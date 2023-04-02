@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       channel:
-        required: true
+        default: stable
         description: Pick channel
         type: choice
         options:
