@@ -35,9 +35,7 @@ export async function getNewTagName(tagName: string) {
 }
 
 async function getNewVersionName(tagName: string) {
-  const newBuildForPrerelease = core.getBooleanInput(NEW_BUILD_FOR_PRERELEASE, {
-    required: false,
-  });
+  const newBuildForPrerelease = core.getBooleanInput(NEW_BUILD_FOR_PRERELEASE);
 
   let kind: "unknown" | "major" | "minor" | "patch" | "prerelease" = "unknown";
 
@@ -49,7 +47,7 @@ async function getNewVersionName(tagName: string) {
 
   core.debug("Bump kind: " + kind);
 
-  const channel = core.getInput(CHANNEL, { required: false });
+  const channel = core.getInput(CHANNEL);
 
   switch (kind) {
     case MAJOR:
