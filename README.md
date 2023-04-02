@@ -15,7 +15,7 @@ Generate tag names with the help of semantic versioning and pull requests labels
 ## Usage
 
     - name: Generate tag name
-      uses: MiguelRipoll23/generate-tag-name@v1.0.0
+      uses: MiguelRipoll23/generate-tag-name@v1.0.1
       id: generate-tag-name
       with:
         major-labels: breaking-change
