@@ -11,7 +11,7 @@ import { Repo } from "../interfaces/repo-interface";
 let octokit: InstanceType<typeof GitHub> | null = null;
 
 export async function setupOctokit() {
-  const token = core.getInput(GITHUB_TOKEN);
+  const token = core.getInput(GITHUB_TOKEN, { required: true });
   octokit = github.getOctokit(token);
 }
 
