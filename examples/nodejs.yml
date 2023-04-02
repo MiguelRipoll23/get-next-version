@@ -4,18 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       channel:
-        required: true
-        description: Pick channel
         type: choice
+        default: stable
+        description: Pick channel
         options:
           - alpha
           - beta
           - stable
 
       new-build-for-prerelease:
-        required: false
-        default: true
         type: boolean
+        default: true
         description: New build for prerelease
 
 jobs:
