@@ -1,8 +1,22 @@
 name: Generate tag
 
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
+    inputs:
+      channel:
+        default: stable
+        description: Pick channel
+        type: choice
+        options:
+          - alpha
+          - beta
+          - stable
+
+      new-build-for-prerelease:
+        required: false
+        default: true
+        type: boolean
+        description: New build for prerelease
 
 jobs:
   generate-tag:
