@@ -26,6 +26,10 @@ inputs:
     description: "Comma separated list of labels for patch releases."
     default: "bugfix"
 
+branding:
+  icon: tag
+  color: purple
+
 runs:
   using: "node16"
   main: "dist/index.js"
