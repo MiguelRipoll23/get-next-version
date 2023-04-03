@@ -3,10 +3,11 @@ import * as github from "@actions/github";
 import { GitHub } from "@actions/github/lib/utils";
 import {
   GITHUB_TOKEN,
-  PULL_REQUEST_SEARCH_FAILED as PULL_REQUEST_SEARCH_FAILED,
   NO_RELEASES_FOUND,
   NOT_FOUND,
   OCTOKIT_NOT_INITIALIZED,
+  PULL_REQUEST_SEARCH_FAILED as PULL_REQUEST_SEARCH_FAILED,
+  REFS_HEADS,
 } from "../constants/github-constants";
 
 let octokit: InstanceType<typeof GitHub> | null = null;
@@ -51,9 +52,12 @@ export async function getMergedPullRequestsFilteredByCreated(
   if (octokit === null) throw new Error(OCTOKIT_NOT_INITIALIZED);
 
   const { context } = github;
+  const { ref } = context;
   const { owner, repo } = context.repo;
 
-  const query = `repo:${owner}/${repo} is:pr is:merged created:>=${createdAt}`;
+  const base = ref.replace(REFS_HEADS, "");
+
+  const query = `repo:${owner}/${repo} is:pr is:merged base:${base} created:>=${createdAt}`;
   core.debug("Query: " + query);
 
   let response = null;
