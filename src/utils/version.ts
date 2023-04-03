@@ -1,6 +1,7 @@
 import * as core from "@actions/core";
 import * as semver from "semver";
 import {
+  INVALID_VERSION_NAME,
   CHANNEL,
   MAJOR,
   MAJOR_LABELS,
@@ -48,7 +49,7 @@ async function getNewVersionName(tagName: string, tagCreatedAt: string) {
     kind = await getKindByPullRequestsLabels(tagName, tagCreatedAt);
   }
 
-  core.debug("Bump kind: " + kind);
+  core.debug("Kind: " + kind);
 
   const channel = core.getInput(CHANNEL, { required: true });
 
@@ -74,7 +75,7 @@ function hasPrerelease(tagName: string) {
   const version = semver.parse(tagName);
 
   if (version === null) {
-    throw new Error("Version name recognized");
+    throw new Error(INVALID_VERSION_NAME);
   }
 
   if (version.prerelease.length === 0) {

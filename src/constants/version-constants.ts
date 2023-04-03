@@ -1,3 +1,5 @@
+export const INVALID_VERSION_NAME =
+  "Invalid version name (must be semver-valid)";
 export const MAJOR_LABELS = "major-labels";
 export const MINOR_LABELS = "minor-labels";
 export const PATCH_LABELS = "patch-labels";
