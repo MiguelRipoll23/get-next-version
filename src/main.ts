@@ -1,15 +1,16 @@
 import * as core from "@actions/core";
-import { getLatestTagName, setupOctokit } from "./utils/github";
+import { getLatestTag, setupOctokit } from "./utils/github";
 import { getNewTagName } from "./utils/version";
 import { TAG_NAME } from "./constants/version-constants";
 
 async function run() {
   setupOctokit();
 
-  const tagName = await getLatestTagName();
-  core.info("Latest tag name: " + tagName);
+  const latestTag = await getLatestTag();
+  const latestTagName = latestTag.tag_name;
+  core.info("Latest tag name: " + latestTagName);
 
-  const newTagName = await getNewTagName(tagName);
+  const newTagName = await getNewTagName(latestTag);
   core.info("New tag name: " + newTagName);
 
   core.setOutput(TAG_NAME, newTagName);

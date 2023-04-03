@@ -17,10 +17,14 @@ import {
 } from "../constants/version-constants";
 import { PullRequest } from "../interfaces/pull-request-interface";
 import { Label } from "../interfaces/label-interface";
-import { getMergedPullRequestsSinceTagName } from "./github";
+import { getMergedPullRequestsFilteredByCreated } from "./github";
+import { Tag } from "../interfaces/tag-interface";
 
-export async function getNewTagName(tagName: string) {
-  const newVersionName = await getNewVersionName(tagName);
+export async function getNewTagName(latestTag: Tag) {
+  const tagName = latestTag.tag_name;
+  const tagCreatedAt = latestTag.created_at;
+
+  const newVersionName = await getNewVersionName(tagName, tagCreatedAt);
 
   if (newVersionName === null) {
     throw new Error(NO_CHANGES_FOUND);
@@ -33,7 +37,7 @@ export async function getNewTagName(tagName: string) {
   return newVersionName;
 }
 
-async function getNewVersionName(tagName: string) {
+async function getNewVersionName(tagName: string, tagCreatedAt: string) {
   const newBuildForPrerelease = core.getBooleanInput(NEW_BUILD_FOR_PRERELEASE);
 
   let kind: "unknown" | "major" | "minor" | "patch" | "prerelease" = "unknown";
@@ -41,7 +45,7 @@ async function getNewVersionName(tagName: string) {
   if (hasPrerelease(tagName) && newBuildForPrerelease) {
     kind = PRERELEASE;
   } else {
-    kind = await getKindByPullRequestsLabels(tagName);
+    kind = await getKindByPullRequestsLabels(tagName, tagCreatedAt);
   }
 
   core.debug("Bump kind: " + kind);
@@ -80,9 +84,12 @@ function hasPrerelease(tagName: string) {
   return true;
 }
 
-async function getKindByPullRequestsLabels(tagName: string) {
+async function getKindByPullRequestsLabels(
+  tagName: string,
+  tagCreatedAt: string
+) {
   const mergedPullRequests: PullRequest[] =
-    await getMergedPullRequestsSinceTagName(tagName);
+    await getMergedPullRequestsFilteredByCreated(tagCreatedAt);
 
   const majorLabels = getMajorLabels();
   const minorLabels = getMinorLabels();
@@ -93,9 +100,12 @@ async function getKindByPullRequestsLabels(tagName: string) {
   for (const mergedPullRequest of mergedPullRequests) {
     const { title, labels } = mergedPullRequest;
 
-    const hasMajorLabel = labels.some((label: Label) =>
-      majorLabels.includes(label.name)
-    );
+    const hasMajorLabel = labels.some((label: Label) => {
+      if (typeof label.name === "string") {
+        return majorLabels.includes(label.name);
+      }
+      return false;
+    });
 
     if (hasMajorLabel) {
       kind = MAJOR;
@@ -103,9 +113,13 @@ async function getKindByPullRequestsLabels(tagName: string) {
       break;
     }
 
-    const hasMinorLabel = labels.some((label: Label) =>
-      minorLabels.includes(label.name)
-    );
+    const hasMinorLabel = labels.some((label: Label) => {
+      if (typeof label.name === "string") {
+        return minorLabels.includes(label.name);
+      }
+
+      return false;
+    });
 
     if (hasMinorLabel) {
       kind = kind === UNKNOWN || kind === PATCH ? MINOR : kind;
@@ -113,9 +127,13 @@ async function getKindByPullRequestsLabels(tagName: string) {
       continue;
     }
 
-    const hasPatchLabel = labels.some((label: Label) =>
-      patchLabels.includes(label.name)
-    );
+    const hasPatchLabel = labels.some((label: Label) => {
+      if (typeof label.name === "string") {
+        return patchLabels.includes(label.name);
+      }
+
+      return false;
+    });
 
     if (hasPatchLabel) {
       kind = kind === UNKNOWN ? PATCH : kind;
