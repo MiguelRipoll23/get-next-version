@@ -22,7 +22,22 @@ Generate tag names with the help of semantic versioning and pull requests labels
         minor-labels: feature,enhancement
         patch-labels: bugfix
 
-See the [examples/](/examples/) directory to learn how to use this action alongside other community actions to update the version name and create a new pull request automatically!
+    - name: Update version name
+      uses: reedyuk/npm-version@1.1.1
+      with:
+        version: ${{ steps.generate-tag-name.outputs.tag-name }}
+
+    - name: Create pull request
+      uses: peter-evans/create-pull-request@v4
+      with:
+        branch: version/${{ steps.generate-tag-name.outputs.tag-name }}
+        commit-message: ${{ steps.generate-tag-name.outputs.tag-name }}
+        title: Bump version to ${{ steps.generate-tag-name.outputs.tag-name }}
+        body: Automated pull request triggered by a new version update.
+        labels: new-release,ignore-for-release
+        draft: true
+
+**See the [examples/](/examples/) directory for complete examples!**
 
 ## Inputs
 
