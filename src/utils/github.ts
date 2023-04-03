@@ -2,15 +2,12 @@ import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { GitHub } from "@actions/github/lib/utils";
 import {
-  CLOSED,
   GITHUB_TOKEN,
   LIST_PULL_REQUESTS_FAILED,
-  MERGED_CHECK_FAILED,
   NO_RELEASES_FOUND,
   NOT_FOUND,
   OCTOKIT_NOT_INITIALIZED,
 } from "../constants/github-constants";
-import { Repo } from "../interfaces/repo-interface";
 
 let octokit: InstanceType<typeof GitHub> | null = null;
 
@@ -19,7 +16,7 @@ export async function setupOctokit() {
   octokit = github.getOctokit(token);
 }
 
-export async function getLatestTagName() {
+export async function getLatestTag() {
   if (octokit === null) throw new Error(OCTOKIT_NOT_INITIALIZED);
 
   const { context } = github;
@@ -44,26 +41,26 @@ export async function getLatestTagName() {
   }
 
   const { data } = response;
-  const { tag_name } = data;
 
-  return tag_name;
+  return data;
 }
 
-export async function getMergedPullRequestsSinceTagName(tagName: string) {
+export async function getMergedPullRequestsFilteredByCreated(
+  createdAt: string
+) {
   if (octokit === null) throw new Error(OCTOKIT_NOT_INITIALIZED);
 
-  const mergedPullRequests = [];
-
   const { context } = github;
-  const { repo } = context;
+  const { owner, repo } = context.repo;
+
+  const q = `repo:${owner}/${repo} is:pr is:merged created:${createdAt}`;
+  core.debug(q);
 
   let response = null;
 
   try {
-    response = await octokit.rest.pulls.list({
-      ...repo,
-      state: CLOSED,
-      head: tagName,
+    response = await octokit.rest.search.issuesAndPullRequests({
+      q,
     });
   } catch (error) {
     throw new Error(LIST_PULL_REQUESTS_FAILED, {
@@ -71,46 +68,10 @@ export async function getMergedPullRequestsSinceTagName(tagName: string) {
     });
   }
 
-  const closedPullRequests = response.data;
+  const { data } = response;
+  const { items } = data;
 
-  for (const closedPullRequest of closedPullRequests) {
-    const { number } = closedPullRequest;
+  core.info("Merged pull requests (" + items.length + ")");
 
-    if (await isPulLRequestMerged(repo, number)) {
-      mergedPullRequests.push(closedPullRequest);
-    }
-  }
-
-  core.info("Merged pull requests (" + mergedPullRequests.length + ")");
-
-  return mergedPullRequests;
-}
-
-async function isPulLRequestMerged(repo: Repo, pullNumber: number) {
-  if (octokit === null) throw new Error(OCTOKIT_NOT_INITIALIZED);
-
-  let response = null;
-
-  try {
-    response = await octokit.rest.pulls.checkIfMerged({
-      ...repo,
-      pull_number: pullNumber,
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      const { message } = error;
-      core.debug(message);
-      core.warning(MERGED_CHECK_FAILED + " (#" + pullNumber + " )");
-    }
-
-    return;
-  }
-
-  const { status } = response;
-
-  if (status === 204) {
-    return true;
-  }
-
-  return false;
+  return items;
 }
