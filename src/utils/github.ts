@@ -38,8 +38,6 @@ export async function getLatestTagName() {
           cause: error,
         });
       }
-
-      core.error(message);
     }
 
     throw error;
