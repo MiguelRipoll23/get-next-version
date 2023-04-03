@@ -51,3 +51,4 @@ jobs:
           title: Bump version to ${{ steps.generate-tag-name.outputs.tag-name }}
           body: Automated pull request triggered by a new version update.
           labels: new-release,ignore-for-release
+          draft: true
