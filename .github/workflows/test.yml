@@ -28,8 +28,6 @@ jobs:
     steps:
       - name: Checkout branch
         uses: actions/checkout@v3
-        with:
-          ref: "releases/v1.0.0"
 
       - name: Generate tag name
         uses: ./
