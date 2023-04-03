@@ -4,6 +4,7 @@ import { GitHub } from "@actions/github/lib/utils";
 import {
   CLOSED,
   GITHUB_TOKEN,
+  LIST_PULL_REQUESTS_FAILED,
   MERGED_CHECK_FAILED,
   NO_RELEASES_FOUND,
   NOT_FOUND,
@@ -58,11 +59,19 @@ export async function getMergedPullRequestsSinceTagName(tagName: string) {
   const { context } = github;
   const { repo } = context;
 
-  const response = await octokit.rest.pulls.list({
-    ...repo,
-    state: CLOSED,
-    head: tagName,
-  });
+  let response = null;
+
+  try {
+    response = await octokit.rest.pulls.list({
+      ...repo,
+      state: CLOSED,
+      head: tagName,
+    });
+  } catch (error) {
+    throw new Error(LIST_PULL_REQUESTS_FAILED, {
+      cause: error,
+    });
+  }
 
   const closedPullRequests = response.data;
 
