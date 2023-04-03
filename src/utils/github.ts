@@ -53,13 +53,14 @@ export async function getMergedPullRequestsFilteredByCreated(
   const { context } = github;
   const { owner, repo } = context.repo;
 
-  core.info(`repo:${owner}/${repo} is:pr is:merged created:${createdAt}`);
+  const q = `repo:${owner}/${repo} is:pr is:merged created:${createdAt}`;
+  core.debug(q);
 
   let response = null;
 
   try {
     response = await octokit.rest.search.issuesAndPullRequests({
-      q: `repo:${owner}/${repo} is:pr is:merged created:${createdAt}`,
+      q,
     });
   } catch (error) {
     throw new Error(LIST_PULL_REQUESTS_FAILED, {
