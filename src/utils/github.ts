@@ -4,6 +4,8 @@ import { GitHub } from "@actions/github/lib/utils";
 import {
   CLOSED,
   GITHUB_TOKEN,
+  NO_RELEASES_FOUND,
+  NOT_FOUND,
   OCTOKIT_NOT_INITIALIZED,
 } from "../constants/github-constants";
 import { Repo } from "../interfaces/repo-interface";
@@ -21,7 +23,25 @@ export async function getLatestTagName() {
   const { context } = github;
   const { repo } = context;
 
-  const response = await octokit.rest.repos.getLatestRelease(repo);
+  let response = null;
+
+  try {
+    response = await octokit.rest.repos.getLatestRelease(repo);
+  } catch (error) {
+    if (error instanceof Error) {
+      const { message } = error;
+
+      if (message.includes(NOT_FOUND)) {
+        throw new Error(NO_RELEASES_FOUND, {
+          cause: error,
+        });
+      }
+
+      core.error(message);
+    }
+
+    throw error;
+  }
 
   const { data } = response;
   const { tag_name } = data;
