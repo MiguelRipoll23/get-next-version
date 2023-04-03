@@ -10,9 +10,8 @@ async function run() {
   core.info("Latest tag name: " + tagName);
 
   const newTagName = await getNewTagName(tagName);
-  if (newTagName === null) process.exit(1);
-
   core.info("New tag name: " + newTagName);
+
   core.setOutput(TAG_NAME, newTagName);
 }
 

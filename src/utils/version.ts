@@ -23,8 +23,7 @@ export async function getNewTagName(tagName: string) {
   const newVersionName = await getNewVersionName(tagName);
 
   if (newVersionName === null) {
-    core.error(NO_CHANGES_FOUND);
-    return null;
+    throw new Error(NO_CHANGES_FOUND);
   }
 
   if (tagName.includes(V)) {
@@ -218,7 +217,7 @@ function getPrereleaseVersionName(tagName: string, channel = "") {
 
   const [prereleaseId, prereleaseCount] = version.prerelease as [
     string,
-    number
+    number,
   ];
 
   if (prereleaseId === channel) {
