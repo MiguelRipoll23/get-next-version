@@ -2,8 +2,6 @@
 
 Generate tag names with the help of semantic versioning and pull requests labels.
 
-## Demo
-
     Latest tag name: v1.0.0
     Merged pull requests (4)
     ✨ Add feature requested way too many times
@@ -39,7 +37,7 @@ Generate tag names with the help of semantic versioning and pull requests labels
 
 **See the [examples/](/examples/) directory for complete examples!**
 
-## Inputs
+### Inputs
 
 | Name                     | Description                                                          | Default             |
 | ------------------------ | -------------------------------------------------------------------- | ------------------- |
@@ -50,8 +48,12 @@ Generate tag names with the help of semantic versioning and pull requests labels
 | minor-labels             | Comma separated list of labels for minor releases.                   | feature,enhancement |
 | patch-labels             | Comma separated list of labels for patch releases.                   | bugfix              |
 
-## Outputs
+### Outputs
 
 | Name     | Description                                          |
 | -------- | ---------------------------------------------------- |
 | tag-name | New generated tag name to use for your next version. |
+
+## Feedback
+
+Any feedback or contributions to this repository are welcome! Please open an issue or a pull request describing your suggestions along your use case.
