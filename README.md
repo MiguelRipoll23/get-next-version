@@ -15,7 +15,7 @@ Voilà! That's your new tag name just for you.
 ## Usage
 
     - name: Generate tag name
-      uses: MiguelRipoll23/generate-tag-name@v1.0.2
+      uses: MiguelRipoll23/generate-tag-name@v1.0.3
       id: generate-tag-name
       with:
         major-labels: breaking-change
