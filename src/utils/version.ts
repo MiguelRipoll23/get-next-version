@@ -217,7 +217,7 @@ function getPrereleaseVersionName(tagName: string, channel = "") {
 
   const [prereleaseId, prereleaseCount] = version.prerelease as [
     string,
-    number,
+    number
   ];
 
   if (prereleaseId === channel) {
