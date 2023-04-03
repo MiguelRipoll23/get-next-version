@@ -4,6 +4,7 @@ import { GitHub } from "@actions/github/lib/utils";
 import {
   CLOSED,
   GITHUB_TOKEN,
+  MERGED_CHECK_FAILED,
   NO_RELEASES_FOUND,
   NOT_FOUND,
   OCTOKIT_NOT_INITIALIZED,
@@ -81,21 +82,27 @@ export async function getMergedPullRequestsSinceTagName(tagName: string) {
 async function isPulLRequestMerged(repo: Repo, pullNumber: number) {
   if (octokit === null) throw new Error(OCTOKIT_NOT_INITIALIZED);
 
+  let response = null;
+
   try {
-    const response = await octokit.rest.pulls.checkIfMerged({
+    response = await octokit.rest.pulls.checkIfMerged({
       ...repo,
       pull_number: pullNumber,
     });
-
-    const { status } = response;
-
-    if (status === 204) {
-      return true;
-    }
   } catch (error) {
     if (error instanceof Error) {
-      core.debug(error.message);
+      const { message } = error;
+      core.debug(message);
+      core.warning(MERGED_CHECK_FAILED + " (#" + pullNumber + " )");
     }
+
+    return;
+  }
+
+  const { status } = response;
+
+  if (status === 204) {
+    return true;
   }
 
   return false;
