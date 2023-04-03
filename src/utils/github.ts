@@ -3,7 +3,7 @@ import * as github from "@actions/github";
 import { GitHub } from "@actions/github/lib/utils";
 import {
   GITHUB_TOKEN,
-  LIST_PULL_REQUESTS_FAILED,
+  PULL_REQUEST_SEARCH_FAILED as PULL_REQUEST_SEARCH_FAILED,
   NO_RELEASES_FOUND,
   NOT_FOUND,
   OCTOKIT_NOT_INITIALIZED,
@@ -53,8 +53,8 @@ export async function getMergedPullRequestsFilteredByCreated(
   const { context } = github;
   const { owner, repo } = context.repo;
 
-  const q = `repo:${owner}/${repo} is:pr is:merged created:${createdAt}`;
-  core.debug(q);
+  const q = `repo:${owner}/${repo} is:pr is:merged created:>=${createdAt}`;
+  core.debug("Query: " + q);
 
   let response = null;
 
@@ -63,7 +63,7 @@ export async function getMergedPullRequestsFilteredByCreated(
       q,
     });
   } catch (error) {
-    throw new Error(LIST_PULL_REQUESTS_FAILED, {
+    throw new Error(PULL_REQUEST_SEARCH_FAILED, {
       cause: error,
     });
   }
