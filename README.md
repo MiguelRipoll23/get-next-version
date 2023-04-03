@@ -10,6 +10,8 @@ Generate tag names with the help of semantic versioning and pull requests labels
     🚫 Improve code formatter
     New tag name: v1.1.0
 
+Voilà! That's your new tag name just for you.
+
 ## Usage
 
     - name: Generate tag name
