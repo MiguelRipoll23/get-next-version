@@ -53,6 +53,8 @@ export async function getMergedPullRequestsFilteredByCreated(
   const { context } = github;
   const { owner, repo } = context.repo;
 
+  core.info(`repo:${owner}/${repo} is:pr is:merged created:${createdAt}`);
+
   let response = null;
 
   try {
