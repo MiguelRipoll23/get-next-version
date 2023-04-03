@@ -72,6 +72,10 @@ async function getNewVersionName(tagName: string, tagCreatedAt: string) {
 }
 
 function hasPrerelease(tagName: string) {
+  if (tagName.startsWith(V)) {
+    tagName = tagName.substring(1);
+  }
+
   const version = semver.parse(tagName);
 
   if (version === null) {
