@@ -37,7 +37,7 @@ Generate tag names with the help of semantic versioning and pull requests labels
         labels: new-release,ignore-for-release
         draft: true
 
-See the [examples/](/examples/) directory to see complete examples!
+**See the [examples/](/examples/) directory for complete examples!**
 
 ## Inputs
 
