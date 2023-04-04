@@ -81,9 +81,12 @@ export async function getMergedPullRequestsFilteredByCreated(
       q: query,
     });
   } catch (error) {
-    throw new Error(PULL_REQUESTS_SEARCH_FAILED, {
-      cause: error,
-    });
+    if (error instanceof Error) {
+      const { message } = error;
+      throw new Error(PULL_REQUESTS_SEARCH_FAILED + " (" + message + ")");
+    }
+
+    throw error;
   }
 
   const { data } = response;
