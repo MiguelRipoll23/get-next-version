@@ -14,6 +14,10 @@ inputs:
     default: "true"
     description: "Create a new build if version name contains a prerelease identifier."
 
+  pull_requests_base_branch:
+    default: ""
+    description: "Base branch used during pull requests search."
+
   major-labels:
     description: "Comma separated list of labels for major releases."
     default: "breaking-change"

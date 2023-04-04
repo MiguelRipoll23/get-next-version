@@ -41,14 +41,15 @@ Voilà! That's your new tag name just for you.
 
 ### Inputs
 
-| Name                     | Description                                                          | Default             |
-| ------------------------ | -------------------------------------------------------------------- | ------------------- |
-| github-token             | Token from GitHub Actions or a Personal Access Token.                | github              |
-| channel                  | Target channel (alpha/beta/stable/custom) of the version.            | stable              |
-| new-build-for-prerelease | Create a new build if version name contains a prerelease identifier. | true                |
-| major-labels             | Comma separated list of labels for major releases.                   | breaking-change     |
-| minor-labels             | Comma separated list of labels for minor releases.                   | feature,enhancement |
-| patch-labels             | Comma separated list of labels for patch releases.                   | bugfix              |
+| Name                      | Description                                                          | Default             |
+| ------------------------- | -------------------------------------------------------------------- | ------------------- |
+| github-token              | Token from GitHub Actions or a Personal Access Token.                | github.token        |
+| channel                   | Target channel (alpha/beta/stable/custom) of the version.            | stable              |
+| new-build-for-prerelease  | Create a new build if version name contains a prerelease identifier. | true                |
+| pull_requests_base_branch | Base branch used during pull requests search.                        | github.ref          |
+| major-labels              | Comma separated list of labels for major releases.                   | breaking-change     |
+| minor-labels              | Comma separated list of labels for minor releases.                   | feature,enhancement |
+| patch-labels              | Comma separated list of labels for patch releases.                   | bugfix              |
 
 ### Outputs
 

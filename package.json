@@ -1,15 +1,12 @@
 {
   "name": "generate-tag-name",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Generate tag names with the help of semantic versioning and pull requests labels.",
   "main": "lib/main.js",
   "scripts": {
-    "build": "tsc",
-    "format": "prettier --write .",
-    "format-check": "prettier --check .",
-    "lint": "eslint src/**/*.ts",
-    "package": "ncc build --source-map --license licenses.txt",
-    "all": "npm run build && npm run format && npm run lint && npm run package"
+    "build": "tsc && prettier --write . && eslint src/**/*.ts",
+    "test": "git branch -f test main && git checkout test && npm run package",
+    "package": "ncc build --source-map --license licenses.txt && git add dist/ -f && git commit -a && git push"
   },
   "repository": {
     "type": "git",
