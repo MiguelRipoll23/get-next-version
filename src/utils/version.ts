@@ -42,19 +42,19 @@ async function getNewVersionName(
   tagName: string,
   tagCreatedAt: string
 ): Promise<string | null> {
-  const newBuildForPrerelease = core.getBooleanInput(NEW_BUILD_FOR_PRERELEASE);
-
   let kind: "unknown" | "major" | "minor" | "patch" | "prerelease" = UNKNOWN;
 
-  if (hasPrerelease(tagName) && newBuildForPrerelease) {
+  const channel = core.getInput(CHANNEL, { required: true });
+  const isPrereleaseChannel = channel !== STABLE;
+  const newBuildForPrerelease = core.getBooleanInput(NEW_BUILD_FOR_PRERELEASE);
+
+  if (isPrereleaseChannel && hasPrerelease(tagName) && newBuildForPrerelease) {
     kind = PRERELEASE;
   } else {
     kind = await getKindByPullRequestsLabels(tagCreatedAt);
   }
 
   core.debug("Kind: " + kind);
-
-  const channel = core.getInput(CHANNEL, { required: true });
 
   switch (kind) {
     case MAJOR:
