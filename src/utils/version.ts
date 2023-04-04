@@ -1,8 +1,8 @@
 import * as core from "@actions/core";
 import * as semver from "semver";
 import {
-  INVALID_VERSION_NAME,
   CHANNEL,
+  INVALID_VERSION_NAME,
   MAJOR,
   MAJOR_LABELS,
   MINOR,
@@ -21,7 +21,7 @@ import { Label } from "../interfaces/label-interface";
 import { getMergedPullRequestsFilteredByCreated } from "./github";
 import { Tag } from "../interfaces/tag-interface";
 
-export async function getNewTagName(latestTag: Tag) {
+export async function getNewTagName(latestTag: Tag): Promise<string> {
   const tagName = latestTag.tag_name;
   const tagCreatedAt = latestTag.created_at;
 
@@ -38,15 +38,18 @@ export async function getNewTagName(latestTag: Tag) {
   return newVersionName;
 }
 
-async function getNewVersionName(tagName: string, tagCreatedAt: string) {
+async function getNewVersionName(
+  tagName: string,
+  tagCreatedAt: string
+): Promise<string | null> {
   const newBuildForPrerelease = core.getBooleanInput(NEW_BUILD_FOR_PRERELEASE);
 
-  let kind: "unknown" | "major" | "minor" | "patch" | "prerelease" = "unknown";
+  let kind: "unknown" | "major" | "minor" | "patch" | "prerelease" = UNKNOWN;
 
   if (hasPrerelease(tagName) && newBuildForPrerelease) {
     kind = PRERELEASE;
   } else {
-    kind = await getKindByPullRequestsLabels(tagName, tagCreatedAt);
+    kind = await getKindByPullRequestsLabels(tagCreatedAt);
   }
 
   core.debug("Kind: " + kind);
@@ -71,7 +74,7 @@ async function getNewVersionName(tagName: string, tagCreatedAt: string) {
   }
 }
 
-function hasPrerelease(tagName: string) {
+function hasPrerelease(tagName: string): boolean {
   if (tagName.startsWith(V)) {
     tagName = tagName.substring(1);
   }
@@ -89,18 +92,15 @@ function hasPrerelease(tagName: string) {
   return true;
 }
 
-async function getKindByPullRequestsLabels(
-  tagName: string,
-  tagCreatedAt: string
-) {
+async function getKindByPullRequestsLabels(tagCreatedAt: string) {
+  let kind: "major" | "minor" | "patch" | "prerelease" | "unknown" = UNKNOWN;
+
   const mergedPullRequests: PullRequest[] =
     await getMergedPullRequestsFilteredByCreated(tagCreatedAt);
 
   const majorLabels = getMajorLabels();
   const minorLabels = getMinorLabels();
   const patchLabels = getPatchLabels();
-
-  let kind: "major" | "minor" | "patch" | "prerelease" | "unknown" = UNKNOWN;
 
   for (const mergedPullRequest of mergedPullRequests) {
     const { title, labels } = mergedPullRequest;
@@ -152,29 +152,29 @@ async function getKindByPullRequestsLabels(
   return kind;
 }
 
-function getMajorLabels() {
+function getMajorLabels(): string[] {
   const majorLabels = core.getInput(MAJOR_LABELS);
 
   return majorLabels.split(",");
 }
 
-function getMinorLabels() {
+function getMinorLabels(): string[] {
   const minorLabels = core.getInput(MINOR_LABELS);
 
   return minorLabels.split(",");
 }
 
-function getPatchLabels() {
+function getPatchLabels(): string[] {
   const patchLabels = core.getInput(PATCH_LABELS);
 
   return patchLabels.split(",");
 }
 
-function logPullRequestTitleWithEmoji(emoji: string, title: string) {
+function logPullRequestTitleWithEmoji(emoji: string, title: string): void {
   core.info(emoji + " " + title);
 }
 
-function getMajorVersionName(tagName: string, channel = "") {
+function getMajorVersionName(tagName: string, channel = ""): string | null {
   const version = semver.parse(tagName);
 
   if (version === null) {
@@ -194,7 +194,7 @@ function getMajorVersionName(tagName: string, channel = "") {
   return version.format();
 }
 
-function getMinorVersionName(tagName: string, channel = "") {
+function getMinorVersionName(tagName: string, channel = ""): string | null {
   const version = semver.parse(tagName);
 
   if (version === null) {
@@ -213,7 +213,7 @@ function getMinorVersionName(tagName: string, channel = "") {
   return version.format();
 }
 
-function getPatchVersionName(tagName: string, channel = "") {
+function getPatchVersionName(tagName: string, channel = ""): string | null {
   const version = semver.parse(tagName);
 
   if (version === null) {
@@ -231,7 +231,10 @@ function getPatchVersionName(tagName: string, channel = "") {
   return version.format();
 }
 
-function getPrereleaseVersionName(tagName: string, channel = "") {
+function getPrereleaseVersionName(
+  tagName: string,
+  channel = ""
+): string | null {
   const version = semver.parse(tagName);
 
   if (version === null) {

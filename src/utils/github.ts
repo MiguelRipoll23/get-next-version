@@ -10,6 +10,8 @@ import {
   PULL_REQUESTS_SEARCH_FAILED,
   REFS_HEADS,
 } from "../constants/github-constants";
+import { Tag } from "../interfaces/tag-interface";
+import { PullRequest } from "../interfaces/pull-request-interface";
 
 let octokit: InstanceType<typeof GitHub> | null = null;
 
@@ -18,7 +20,7 @@ export async function setupOctokit() {
   octokit = github.getOctokit(token);
 }
 
-export async function getLatestTag() {
+export async function getLatestTag(): Promise<Tag> {
   if (octokit === null) throw new Error(OCTOKIT_NOT_INITIALIZED);
 
   const { context } = github;
@@ -27,7 +29,10 @@ export async function getLatestTag() {
   let response = null;
 
   try {
-    response = await octokit.rest.repos.getLatestRelease(repo);
+    response = await octokit.rest.repos.listReleases({
+      ...repo,
+      per_page: 1,
+    });
   } catch (error) {
     if (error instanceof Error) {
       const { message } = error;
@@ -44,12 +49,16 @@ export async function getLatestTag() {
 
   const { data } = response;
 
-  return data;
+  if (data.length === 0) {
+    throw new Error(NO_RELEASES_FOUND);
+  }
+
+  return data[0];
 }
 
 export async function getMergedPullRequestsFilteredByCreated(
   createdAt: string
-) {
+): Promise<PullRequest[]> {
   if (octokit === null) throw new Error(OCTOKIT_NOT_INITIALIZED);
 
   const { context } = github;
