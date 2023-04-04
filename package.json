@@ -5,7 +5,7 @@
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc && prettier --write . && eslint src/**/*.ts",
-    "test": "git branch -f test && git checkout test && npm run package",
+    "test": "git branch -f playground && git checkout test && npm run package",
     "package": "ncc build --source-map --license licenses.txt && git add dist/ -f"
   },
   "repository": {
