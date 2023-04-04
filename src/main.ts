@@ -3,7 +3,7 @@ import { getLatestTag, setupOctokit } from "./utils/github";
 import { getNewTagName } from "./utils/version";
 import { TAG_NAME } from "./constants/version-constants";
 
-async function run() {
+async function run(): Promise<void> {
   setupOctokit();
 
   const latestTag = await getLatestTag();
