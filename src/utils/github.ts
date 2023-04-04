@@ -16,7 +16,7 @@ import { PullRequest } from "../interfaces/pull-request-interface";
 
 let octokit: InstanceType<typeof GitHub> | null = null;
 
-export async function setupOctokit() {
+export async function setupOctokit(): Promise<void> {
   const token = core.getInput(GITHUB_TOKEN, { required: true });
   octokit = github.getOctokit(token);
 }
@@ -30,7 +30,7 @@ export async function getLatestTag(): Promise<Tag> {
   let response = null;
 
   try {
-    response = await octokit.paginate(octokit.rest.repos.listReleases, {
+    response = await octokit.rest.repos.listReleases({
       ...repo,
       per_page: 1,
     });
@@ -48,11 +48,13 @@ export async function getLatestTag(): Promise<Tag> {
     throw error;
   }
 
-  if (response.length === 0) {
+  const { data } = response;
+
+  if (data.length === 0) {
     throw new Error(NO_RELEASES_FOUND);
   }
 
-  return response[0];
+  return data[0];
 }
 
 export async function getMergedPullRequestsFilteredByCreated(
@@ -76,9 +78,12 @@ export async function getMergedPullRequestsFilteredByCreated(
   let response = null;
 
   try {
-    response = await octokit.rest.search.issuesAndPullRequests({
-      q: query,
-    });
+    response = await octokit.paginate(
+      octokit.rest.search.issuesAndPullRequests,
+      {
+        q: query,
+      }
+    );
   } catch (error) {
     if (error instanceof Error) {
       const { message } = error;
@@ -88,10 +93,7 @@ export async function getMergedPullRequestsFilteredByCreated(
     throw error;
   }
 
-  const { data } = response;
-  const { items } = data;
+  core.info("Merged pull requests (" + response.length + ")");
 
-  core.info("Merged pull requests (" + items.length + ")");
-
-  return items;
+  return response;
 }
