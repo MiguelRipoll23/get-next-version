@@ -30,7 +30,7 @@ export async function getLatestTag(): Promise<Tag> {
   let response = null;
 
   try {
-    response = await octokit.rest.repos.listReleases({
+    response = await octokit.paginate(octokit.rest.repos.listReleases, {
       ...repo,
       per_page: 1,
     });
@@ -48,13 +48,11 @@ export async function getLatestTag(): Promise<Tag> {
     throw error;
   }
 
-  const { data } = response;
-
-  if (data.length === 0) {
+  if (response.length === 0) {
     throw new Error(NO_RELEASES_FOUND);
   }
 
-  return data[0];
+  return response[0];
 }
 
 export async function getMergedPullRequestsFilteredByCreated(
