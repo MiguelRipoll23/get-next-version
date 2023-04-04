@@ -9,6 +9,7 @@ import {
   MINOR_LABELS,
   NEW_BUILD_FOR_PRERELEASE,
   NO_CHANGES_FOUND,
+  NONE,
   PATCH,
   PATCH_LABELS,
   PRERELEASE,
@@ -20,65 +21,82 @@ import { PullRequest } from "../interfaces/pull-request-interface";
 import { Label } from "../interfaces/label-interface";
 import { getMergedPullRequestsFilteredByCreated } from "./github";
 import { Tag } from "../interfaces/tag-interface";
+import { SemVer } from "semver";
 
 export async function getNewTagName(latestTag: Tag): Promise<string> {
   const tagName = latestTag.tag_name;
   const tagCreatedAt = latestTag.created_at;
 
-  const newVersionName = await getNewVersionName(tagName, tagCreatedAt);
+  const newTagName = await getNewVersionName(tagName, tagCreatedAt);
 
-  if (newVersionName === null) {
+  // Error if no changes found
+  if (newTagName === null) {
     throw new Error(NO_CHANGES_FOUND);
   }
 
+  // Add version prefix
   if (tagName.includes(V)) {
-    return V + newVersionName;
+    return V + newTagName;
   }
 
-  return newVersionName;
+  return newTagName;
 }
 
 async function getNewVersionName(
   tagName: string,
   tagCreatedAt: string
 ): Promise<string | null> {
-  let kind: "unknown" | "major" | "minor" | "patch" | "prerelease" = UNKNOWN;
+  let kind: "unknown" | "none" | "major" | "minor" | "patch" | "prerelease" =
+    UNKNOWN;
 
   const channel = core.getInput(CHANNEL, { required: true });
-  const isPrereleaseChannel = channel !== STABLE;
   const newBuildForPrerelease = core.getBooleanInput(NEW_BUILD_FOR_PRERELEASE);
 
-  if (
-    isPrereleaseChannel &&
-    hasPrereleaseId(tagName) &&
-    newBuildForPrerelease
-  ) {
+  const version = parseVersionByName(tagName);
+  const prereleaseId =
+    version.prerelease.length > 0 ? version.prerelease[0] : STABLE;
+
+  const isStableChannel = channel === STABLE;
+  const isDifferentChannel = channel !== prereleaseId;
+
+  const isPrereleaseChannel = channel !== STABLE;
+  const hasPrereleaseId = version.prerelease.length > 0;
+
+  if (isStableChannel && isDifferentChannel) {
+    // beta.1 -> stable
+    kind = NONE;
+  } else if (newBuildForPrerelease && isPrereleaseChannel && hasPrereleaseId) {
+    // alpha.1 -> alpha.2 -> beta.1
     kind = PRERELEASE;
   } else {
+    // 1.0.0 -> 1.0.1 -> 1.1.0 -> 2.0.0
     kind = await getKindByPullRequestsLabels(tagCreatedAt);
   }
 
   core.debug("Kind: " + kind);
 
   switch (kind) {
+    case NONE:
+      return getVersionNameWithoutPrerelease(version);
+
     case MAJOR:
-      return getMajorVersionName(tagName, channel);
+      return getMajorVersionName(version, channel);
 
     case MINOR:
-      return getMinorVersionName(tagName, channel);
+      return getMinorVersionName(version, channel);
 
     case PATCH:
-      return getPatchVersionName(tagName, channel);
+      return getPatchVersionName(version, channel);
 
     case PRERELEASE:
-      return getPrereleaseVersionName(tagName, channel);
+      return getPrereleaseVersionName(version, channel);
 
     default:
       return null;
   }
 }
 
-function hasPrereleaseId(tagName: string): boolean {
+function parseVersionByName(tagName: string): SemVer {
   if (tagName.startsWith(V)) {
     tagName = tagName.substring(1);
   }
@@ -89,15 +107,11 @@ function hasPrereleaseId(tagName: string): boolean {
     throw new Error(INVALID_VERSION_NAME);
   }
 
-  if (version.prerelease.length === 0) {
-    return false;
-  }
-
-  return true;
+  return version;
 }
 
 async function getKindByPullRequestsLabels(tagCreatedAt: string) {
-  let kind: "major" | "minor" | "patch" | "prerelease" | "unknown" = UNKNOWN;
+  let kind: "major" | "minor" | "patch" | "unknown" = UNKNOWN;
 
   const mergedPullRequests: PullRequest[] =
     await getMergedPullRequestsFilteredByCreated(tagCreatedAt);
@@ -178,13 +192,13 @@ function logPullRequestTitleWithEmoji(emoji: string, title: string): void {
   core.info(emoji + " " + title);
 }
 
-function getMajorVersionName(tagName: string, channel = ""): string | null {
-  const version = semver.parse(tagName);
+function getVersionNameWithoutPrerelease(version: SemVer): string {
+  version.prerelease = [];
 
-  if (version === null) {
-    return null;
-  }
+  return version.format();
+}
 
+function getMajorVersionName(version: SemVer, channel: string): string {
   version.major++;
   version.minor = 0;
   version.patch = 0;
@@ -198,13 +212,7 @@ function getMajorVersionName(tagName: string, channel = ""): string | null {
   return version.format();
 }
 
-function getMinorVersionName(tagName: string, channel = ""): string | null {
-  const version = semver.parse(tagName);
-
-  if (version === null) {
-    return null;
-  }
-
+function getMinorVersionName(version: SemVer, channel: string): string {
   version.minor++;
   version.patch = 0;
 
@@ -217,13 +225,7 @@ function getMinorVersionName(tagName: string, channel = ""): string | null {
   return version.format();
 }
 
-function getPatchVersionName(tagName: string, channel = ""): string | null {
-  const version = semver.parse(tagName);
-
-  if (version === null) {
-    return null;
-  }
-
+function getPatchVersionName(version: SemVer, channel: string): string {
   version.patch++;
 
   if (channel === STABLE) {
@@ -235,16 +237,7 @@ function getPatchVersionName(tagName: string, channel = ""): string | null {
   return version.format();
 }
 
-function getPrereleaseVersionName(
-  tagName: string,
-  channel = ""
-): string | null {
-  const version = semver.parse(tagName);
-
-  if (version === null) {
-    return null;
-  }
-
+function getPrereleaseVersionName(version: SemVer, channel: string): string {
   const [prereleaseId, prereleaseCount] = version.prerelease as [
     string,
     number
