@@ -6,7 +6,8 @@ import {
   NO_RELEASES_FOUND,
   NOT_FOUND,
   OCTOKIT_NOT_INITIALIZED,
-  PULL_REQUEST_SEARCH_FAILED as PULL_REQUEST_SEARCH_FAILED,
+  PULL_REQUESTS_BASE_BRANCH,
+  PULL_REQUESTS_SEARCH_FAILED,
   REFS_HEADS,
 } from "../constants/github-constants";
 
@@ -55,7 +56,11 @@ export async function getMergedPullRequestsFilteredByCreated(
   const { ref } = context;
   const { owner, repo } = context.repo;
 
-  const base = ref.replace(REFS_HEADS, "");
+  let base = core.getInput(PULL_REQUESTS_BASE_BRANCH);
+
+  if (base.length === 0) {
+    base = ref.replace(REFS_HEADS, "");
+  }
 
   const query = `repo:${owner}/${repo} is:pr is:merged base:${base} created:>=${createdAt}`;
   core.debug("Query: " + query);
@@ -67,7 +72,7 @@ export async function getMergedPullRequestsFilteredByCreated(
       q: query,
     });
   } catch (error) {
-    throw new Error(PULL_REQUEST_SEARCH_FAILED, {
+    throw new Error(PULL_REQUESTS_SEARCH_FAILED, {
       cause: error,
     });
   }

@@ -34,6 +34,7 @@ jobs:
         id: generate-tag-name
         with:
           channel: ${{ inputs.channel }}
+          pull_requests_base_branch: main
 
       - name: Log generated tag name
         run: echo ${{ steps.generate-tag-name.outputs.tag-name }}
