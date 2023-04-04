@@ -6,6 +6,7 @@ export const PATCH_LABELS = "patch-labels";
 export const CHANNEL = "channel";
 export const NEW_BUILD_FOR_PRERELEASE = "new-build-for-prerelease";
 export const UNKNOWN = "unknown";
+export const NONE = "none";
 export const MAJOR = "major";
 export const MINOR = "minor";
 export const PATCH = "patch";
