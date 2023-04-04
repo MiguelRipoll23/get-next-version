@@ -48,7 +48,11 @@ async function getNewVersionName(
   const isPrereleaseChannel = channel !== STABLE;
   const newBuildForPrerelease = core.getBooleanInput(NEW_BUILD_FOR_PRERELEASE);
 
-  if (isPrereleaseChannel && hasPrerelease(tagName) && newBuildForPrerelease) {
+  if (
+    isPrereleaseChannel &&
+    hasPrereleaseId(tagName) &&
+    newBuildForPrerelease
+  ) {
     kind = PRERELEASE;
   } else {
     kind = await getKindByPullRequestsLabels(tagCreatedAt);
@@ -74,7 +78,7 @@ async function getNewVersionName(
   }
 }
 
-function hasPrerelease(tagName: string): boolean {
+function hasPrereleaseId(tagName: string): boolean {
   if (tagName.startsWith(V)) {
     tagName = tagName.substring(1);
   }
