@@ -9,6 +9,7 @@ import {
   PULL_REQUESTS_BASE_BRANCH,
   PULL_REQUESTS_SEARCH_FAILED,
   REFS_HEADS,
+  RELEASES_LISTING_FAILED,
 } from "../constants/github-constants";
 import { Tag } from "../interfaces/tag-interface";
 import { PullRequest } from "../interfaces/pull-request-interface";
@@ -38,9 +39,9 @@ export async function getLatestTag(): Promise<Tag> {
       const { message } = error;
 
       if (message.includes(NOT_FOUND)) {
-        throw new Error(NO_RELEASES_FOUND, {
-          cause: error,
-        });
+        throw new Error(NO_RELEASES_FOUND);
+      } else {
+        throw new Error(RELEASES_LISTING_FAILED + " (" + message + ")");
       }
     }
 
