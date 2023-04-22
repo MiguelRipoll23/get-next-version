@@ -14,8 +14,16 @@ Voilà! That's your new tag name just for you.
 
 ## Usage
 
+update-version:
+name: Update version name
+runs-on: ubuntu-latest
+permissions:
+contents: write
+pull-requests: write
+
+    steps:
     - name: Generate tag name
-      uses: MiguelRipoll23/generate-tag-name@v1.5.0
+      uses: MiguelRipoll23/generate-tag-name@v1.5.1
       id: generate-tag-name
       with:
         major-labels: breaking-change
@@ -23,12 +31,12 @@ Voilà! That's your new tag name just for you.
         patch-labels: bugfix
 
     - name: Update version name
-      uses: reedyuk/npm-version@1.1.1
+      uses: reedyuk/npm-version@1.2.1
       with:
         version: ${{ steps.generate-tag-name.outputs.tag-name }}
 
     - name: Create pull request
-      uses: peter-evans/create-pull-request@v4
+      uses: peter-evans/create-pull-request@v5
       with:
         branch: version/${{ steps.generate-tag-name.outputs.tag-name }}
         commit-message: ${{ steps.generate-tag-name.outputs.tag-name }}
