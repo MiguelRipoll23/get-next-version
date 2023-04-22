@@ -14,36 +14,36 @@ Voilà! That's your new tag name just for you.
 
 ## Usage
 
-update-version:
-name: Update version name
-runs-on: ubuntu-latest
-permissions:
-contents: write
-pull-requests: write
+    update-version:
+      name: Update version name
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
+        pull-requests: write
 
-    steps:
-    - name: Generate tag name
-      uses: MiguelRipoll23/generate-tag-name@vv1.6.0
-      id: generate-tag-name
-      with:
-        major-labels: breaking-change
-        minor-labels: feature,enhancement
-        patch-labels: bugfix
+      steps:
+      - name: Generate tag name
+        uses: MiguelRipoll23/generate-tag-name@vv1.6.0
+        id: generate-tag-name
+        with:
+          major-labels: breaking-change
+          minor-labels: feature,enhancement
+          patch-labels: bugfix
 
-    - name: Update version name
-      uses: reedyuk/npm-version@1.2.1
-      with:
-        version: ${{ steps.generate-tag-name.outputs.tag-name }}
+      - name: Update version name
+        uses: reedyuk/npm-version@1.2.1
+        with:
+          version: ${{ steps.generate-tag-name.outputs.tag-name }}
 
-    - name: Create pull request
-      uses: peter-evans/create-pull-request@v5
-      with:
-        branch: version/${{ steps.generate-tag-name.outputs.tag-name }}
-        commit-message: ${{ steps.generate-tag-name.outputs.tag-name }}
-        title: Bump version to ${{ steps.generate-tag-name.outputs.tag-name }}
-        body: Automated pull request triggered by a new version update.
-        labels: new-release,ignore-for-release
-        draft: true
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          branch: version/${{ steps.generate-tag-name.outputs.tag-name }}
+          commit-message: ${{ steps.generate-tag-name.outputs.tag-name }}
+          title: Bump version to ${{ steps.generate-tag-name.outputs.tag-name }}
+          body: Automated pull request triggered by a new version update.
+          labels: new-release,ignore-for-release
+          draft: true
 
 **See the [examples/](/examples/) directory for complete examples!**
 
