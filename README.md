@@ -23,7 +23,7 @@ Voilà! That's your new tag name just for you.
 
       steps:
       - name: Generate tag name
-        uses: MiguelRipoll23/generate-tag-name@vv1.6.0
+        uses: MiguelRipoll23/generate-tag-name@v1.7.0
         id: generate-tag-name
         with:
           major-labels: breaking-change
