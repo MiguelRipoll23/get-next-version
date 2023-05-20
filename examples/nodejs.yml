@@ -1,4 +1,4 @@
-name: Create version
+name: Bump version
 
 on:
   workflow_dispatch:
@@ -18,8 +18,8 @@ on:
         description: New build for prerelease
 
 jobs:
-  update-version:
-    name: Update version name
+  bump-version:
+    name: Bump version
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -29,13 +29,13 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v3
 
-      - name: Generate tag name
+      - name: Generate tag
         uses: MiguelRipoll23/generate-tag-name@v1.7.0
         id: generate-tag-name
         with:
           channel: ${{ inputs.channel }}
 
-      - name: Update version name
+      - name: Update version
         uses: reedyuk/npm-version@1.2.1
         with:
           version: ${{ steps.generate-tag-name.outputs.tag-name }}
@@ -46,6 +46,6 @@ jobs:
           branch: version/${{ steps.generate-tag-name.outputs.tag-name }}
           commit-message: ${{ steps.generate-tag-name.outputs.tag-name }}
           title: Bump version to ${{ steps.generate-tag-name.outputs.tag-name }}
-          body: Automated pull request triggered by a new version update.
+          body: Automated pull request triggered by a new release.
           labels: new-release,ignore-for-release
           draft: true
