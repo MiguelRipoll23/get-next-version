@@ -14,15 +14,15 @@ Voilà! That's your new tag name just for you.
 
 ## Usage
 
-    update-version:
-      name: Update version name
+    bump-version:
+      name: Bump version
       runs-on: ubuntu-latest
       permissions:
         contents: write
         pull-requests: write
 
       steps:
-      - name: Generate tag name
+      - name: Generate tag
         uses: MiguelRipoll23/generate-tag-name@v1.8.0
         id: generate-tag-name
         with:
@@ -30,7 +30,7 @@ Voilà! That's your new tag name just for you.
           minor-labels: feature,enhancement
           patch-labels: bugfix
 
-      - name: Update version name
+      - name: Update version
         uses: reedyuk/npm-version@1.2.1
         with:
           version: ${{ steps.generate-tag-name.outputs.tag-name }}
@@ -41,7 +41,7 @@ Voilà! That's your new tag name just for you.
           branch: version/${{ steps.generate-tag-name.outputs.tag-name }}
           commit-message: ${{ steps.generate-tag-name.outputs.tag-name }}
           title: Bump version to ${{ steps.generate-tag-name.outputs.tag-name }}
-          body: Automated pull request triggered by a new version update.
+          body: Automated pull request triggered by a new release.
           labels: new-release,ignore-for-release
           draft: true
 
