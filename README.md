@@ -23,7 +23,7 @@ Voilà! That's your new tag name just for you.
 
       steps:
       - name: Generate tag
-        uses: MiguelRipoll23/generate-tag-name@v1.8.0
+        uses: MiguelRipoll23/generate-tag-name@main
         id: generate-tag-name
         with:
           major-labels: breaking-change
@@ -31,12 +31,12 @@ Voilà! That's your new tag name just for you.
           patch-labels: bugfix
 
       - name: Update version
-        uses: reedyuk/npm-version@1.2.1
+        uses: reedyuk/npm-version@master
         with:
           version: ${{ steps.generate-tag-name.outputs.tag-name }}
 
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@main
         with:
           branch: version/${{ steps.generate-tag-name.outputs.tag-name }}
           commit-message: ${{ steps.generate-tag-name.outputs.tag-name }}
