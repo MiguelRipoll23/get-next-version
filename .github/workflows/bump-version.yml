@@ -1,0 +1,52 @@
+name: Bump version
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        type: choice
+        default: stable
+        description: Pick channel
+        options:
+          - alpha
+          - beta
+          - stable
+
+      new-build-for-prerelease:
+        type: boolean
+        default: true
+        description: New build for prerelease
+
+jobs:
+  bump-version:
+    name: Bump version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+
+      - name: Generate tag
+        uses: ./
+        id: generate-tag-name
+        with:
+          channel: ${{ inputs.channel }}
+
+      - name: Update version
+        uses: reedyuk/npm-version@1.2.1
+        with:
+          version: ${{ steps.generate-tag-name.outputs.tag-name }}
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          branch: version/${{ steps.generate-tag-name.outputs.tag-name }}
+          commit-message: ${{ steps.generate-tag-name.outputs.tag-name }}
+          title: Bump version to ${{ steps.generate-tag-name.outputs.tag-name }}
+          body: Automated pull request triggered by a new release.
+          labels: new-release,ignore-for-release
+          reviewers: MiguelRipoll23
+          draft: true
