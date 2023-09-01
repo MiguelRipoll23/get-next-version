@@ -57,7 +57,7 @@ Voilà! That's your new tag name just for you.
 | pull_requests_base_branch | Base branch used during pull requests search.                        | github.ref          |
 | major-labels              | Comma separated list of labels for major releases.                   | breaking-change     |
 | minor-labels              | Comma separated list of labels for minor releases.                   | feature,enhancement |
-| patch-labels              | Comma separated list of labels for patch releases.                   | bugfix              |
+| patch-labels              | Comma separated list of labels for patch releases.                   | bugfix,dependencies |
 
 ### Outputs
 
