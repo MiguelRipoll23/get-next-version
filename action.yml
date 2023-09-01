@@ -28,7 +28,7 @@ inputs:
 
   patch-labels:
     description: "Comma separated list of labels for patch releases."
-    default: "bugfix"
+    default: "bugfix,dependencies"
 
 branding:
   icon: tag
