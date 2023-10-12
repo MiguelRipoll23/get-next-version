@@ -44,7 +44,7 @@ export async function getNewTagName(latestTag: Tag): Promise<string> {
 
 async function getNewVersionName(
   tagName: string,
-  tagCreatedAt: string
+  tagCreatedAt: string,
 ): Promise<string | null> {
   let kind: "unknown" | "none" | "major" | "minor" | "patch" | "prerelease" =
     UNKNOWN;
@@ -240,7 +240,7 @@ function getPatchVersionName(version: SemVer, channel: string): string {
 function getPrereleaseVersionName(version: SemVer, channel: string): string {
   const [prereleaseId, prereleaseCount] = version.prerelease as [
     string,
-    number
+    number,
   ];
 
   if (prereleaseId === channel) {

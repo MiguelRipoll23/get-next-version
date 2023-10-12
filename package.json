@@ -1,5 +1,5 @@
 {
-  "name": "generate-tag-name",
+  "name": "create-tag-name",
   "version": "1.9.0",
   "description": "Generate tag names with the help of semantic versioning and pull requests labels.",
   "main": "lib/main.js",

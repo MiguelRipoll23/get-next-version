@@ -58,7 +58,7 @@ export async function getLatestTag(): Promise<Tag> {
 }
 
 export async function getMergedPullRequestsFilteredByCreated(
-  createdAt: string
+  createdAt: string,
 ): Promise<PullRequest[]> {
   if (octokit === null) throw new Error(OCTOKIT_NOT_INITIALIZED);
 
@@ -82,7 +82,7 @@ export async function getMergedPullRequestsFilteredByCreated(
       octokit.rest.search.issuesAndPullRequests,
       {
         q: query,
-      }
+      },
     );
   } catch (error) {
     if (error instanceof Error) {
