@@ -1,5 +1,5 @@
-name: "Generate Tag Name"
-description: "Generate tag names with the help of semantic versioning and pull requests labels."
+name: "Create Tag Name"
+description: "Create tag names with the help of semantic versioning and pull requests labels."
 author: "MiguelRipoll23"
 inputs:
   github-token:

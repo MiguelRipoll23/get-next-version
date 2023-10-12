@@ -1,4 +1,4 @@
-# generate-tag-name
+# create-tag-name
 
 Generate tag names with the help of semantic versioning and pull requests labels.
 
@@ -23,8 +23,8 @@ Voilà! That's your new tag name just for you.
 
       steps:
       - name: Generate tag
-        uses: MiguelRipoll23/generate-tag-name@main
-        id: generate-tag-name
+        uses: MiguelRipoll23/create-tag-name@main
+        id: create-tag-name
         with:
           major-labels: breaking-change
           minor-labels: feature,enhancement
@@ -33,14 +33,14 @@ Voilà! That's your new tag name just for you.
       - name: Update version
         uses: reedyuk/npm-version@master
         with:
-          version: ${{ steps.generate-tag-name.outputs.tag-name }}
+          version: ${{ steps.create-tag-name.outputs.tag-name }}
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@main
         with:
-          branch: version/${{ steps.generate-tag-name.outputs.tag-name }}
-          commit-message: ${{ steps.generate-tag-name.outputs.tag-name }}
-          title: Bump version to ${{ steps.generate-tag-name.outputs.tag-name }}
+          branch: version/${{ steps.create-tag-name.outputs.tag-name }}
+          commit-message: ${{ steps.create-tag-name.outputs.tag-name }}
+          title: Bump version to ${{ steps.create-tag-name.outputs.tag-name }}
           body: Automated pull request triggered by a new release.
           labels: new-release,ignore-for-release
           draft: true
