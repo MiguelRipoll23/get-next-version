@@ -1,6 +1,6 @@
 # create-tag-name
 
-Generate tag names with the help of semantic versioning and pull requests labels.
+Create tag names with the help of semantic versioning and pull requests labels.
 
     Latest tag name: v1.0.0
     Merged pull requests (4)
@@ -22,7 +22,7 @@ Voilà! That's your new tag name just for you.
         pull-requests: write
 
       steps:
-      - name: Generate tag
+      - name: Create tag
         uses: MiguelRipoll23/create-tag-name@main
         id: create-tag-name
         with:
