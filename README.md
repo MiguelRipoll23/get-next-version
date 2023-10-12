@@ -22,7 +22,7 @@ Voilà! That's your new tag name just for you.
         pull-requests: write
 
       steps:
-      - name: Create tag
+      - name: Create tag name
         uses: MiguelRipoll23/create-tag-name@main
         id: create-tag-name
         with:
