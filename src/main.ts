@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
-import { getLatestTag, setupOctokit } from "./utils/github";
-import { getNewTagName } from "./utils/version";
+import { getLatestTag, setupOctokit } from "./services/github";
+import { getNewTagName } from "./services/version";
 import { TAG_NAME } from "./constants/version-constants";
 
 async function run(): Promise<void> {
