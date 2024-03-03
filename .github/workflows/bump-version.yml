@@ -40,7 +40,9 @@ jobs:
 
       - name: Update version
         run: |
-          npm version --no-git-tag-version ${{ steps.create-tag-name.outputs.tag-name }}
+          npm version --no-git-tag-version ${{ env.TAG_NAME }}
+        env:
+          TAG_NAME: ${{ steps.create-tag-name.outputs.tag-name }}
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
