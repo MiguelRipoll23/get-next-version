@@ -22,21 +22,23 @@ Voilà! That's your new tag name just for you.
         pull-requests: write
 
       steps:
+      - name: Setup node
+        uses: actions/setup-node@v4.0.1
+
       - name: Create tag name
-        uses: MiguelRipoll23/create-tag-name@main
+        uses: MiguelRipoll23/create-tag-name@v2.1.2
         id: create-tag-name
         with:
-          major-labels: breaking-change
-          minor-labels: feature,enhancement
-          patch-labels: bugfix
+          channel: ${{ inputs.channel }}
 
       - name: Update version
-        uses: reedyuk/npm-version@master
-        with:
-          version: ${{ steps.create-tag-name.outputs.tag-name }}
+        run: |
+          npm version --no-git-tag-version ${{ env.TAG_NAME }}
+        env:
+          TAG_NAME: ${{ steps.create-tag-name.outputs.tag-name }}
 
       - name: Create pull request
-        uses: peter-evans/create-pull-request@main
+        uses: peter-evans/create-pull-request@v6
         with:
           branch: version/${{ steps.create-tag-name.outputs.tag-name }}
           commit-message: ${{ steps.create-tag-name.outputs.tag-name }}
