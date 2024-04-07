@@ -1,39 +1,47 @@
-name: "Create Tag Name"
-description: "Create tag names with the help of semantic versioning and pull requests labels."
-author: "MiguelRipoll23"
-inputs:
-  github-token:
-    description: "Token from GitHub Actions or a Personal Access Token."
-    default: ${{ github.token }}
-
-  channel:
-    description: "Target channel (alpha/beta/stable/custom) of the version."
-    default: "stable"
-
-  new-build-for-prerelease:
-    default: "true"
-    description: "Create a new build if version name contains a prerelease identifier."
-
-  pull_requests_base_branch:
-    default: ""
-    description: "Base branch used during pull requests search."
-
-  major-labels:
-    description: "Comma separated list of labels for major releases."
-    default: "breaking-change"
-
-  minor-labels:
-    description: "Comma separated list of labels for minor releases."
-    default: "feature,enhancement"
-
-  patch-labels:
-    description: "Comma separated list of labels for patch releases."
-    default: "bugfix,dependencies"
+name: 'Get Next Version'
+description:
+  'Bump versions with the help of semantic versioning and pull requests labels'
+author: 'MiguelRipoll23'
 
 branding:
   icon: tag
   color: purple
 
+inputs:
+  github-token:
+    description: 'Token from GitHub Actions or a Personal Access Token'
+    default: ${{ github.token }}
+
+  channel:
+    description: 'Target channel (alpha/beta/stable/custom) of the version'
+    default: 'stable'
+
+  new-build-for-prerelease:
+    default: 'true'
+    description:
+      'Create a new build if version name contains a prerelease identifier'
+
+  pull_requests_base_branch:
+    default: ''
+    description: 'Base branch used during pull requests search'
+
+  major-labels:
+    description: 'Comma separated list of labels for major releases'
+    default: 'breaking-change'
+
+  minor-labels:
+    description: 'Comma separated list of labels for minor releases'
+    default: 'feature,enhancement'
+
+  patch-labels:
+    description: 'Comma separated list of labels for patch releases'
+    default: 'bugfix,dependencies'
+
+# Define your outputs here.
+outputs:
+  next-version:
+    description: 'Next version to use for a new release'
+
 runs:
-  using: "node20"
-  main: "dist/index.js"
+  using: 'node20'
+  main: 'dist/index.js'

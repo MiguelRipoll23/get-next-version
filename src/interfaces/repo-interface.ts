@@ -1,4 +1,4 @@
 export type Repo = {
-  owner: string;
-  repo: string;
-};
+  owner: string
+  repo: string
+}
