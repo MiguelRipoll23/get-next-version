@@ -1,7 +1,7 @@
 {
   "name": "get-next-version",
   "description": "Bump versions with the help of semantic versioning and pull requests labels",
-  "version": "2.1.2",
+  "version": "3.0.0",
   "author": "MiguelRipoll23",
   "scripts": {
     "bundle": "npm run format:write && npm run package",
