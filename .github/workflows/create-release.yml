@@ -16,29 +16,31 @@ jobs:
     name: Create tag
     runs-on: ubuntu-latest
 
-    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'new-release')
+    if:
+      github.event.pull_request.merged == true &&
+      contains(github.event.pull_request.labels.*.name, 'new-release')
 
     outputs:
-      tag-name: ${{ steps.get-tag-name.outputs.tag-name }}
+      next-version: ${{ steps.get-next-version.outputs.next-version }}
 
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
 
       - name: Get tag name
-        id: get-tag-name
+        id: get-next-version
         run: |
           branch_name="${{ github.event.pull_request.head.ref }}"
-          tag_name=$(echo $branch_name | sed 's/version\///')
-          echo "tag-name=$tag_name" >> $GITHUB_OUTPUT
+          next_version=$(echo $branch_name | sed 's/version\///')
+          echo "next-version=$next_version" >> $GITHUB_OUTPUT
 
       - name: Create tag
         run: |
-          git tag "${{ env.TAG_NAME }}"
+          git tag "${{ env.NEXT_VERSION }}"
         env:
-          TAG_NAME: ${{ steps.get-tag-name.outputs.tag-name }}
+          NEXT_VERSION: ${{ steps.get-next-version.outputs.next-version }}
 
       - name: Push tag to origin
-        run: git push origin "${{ env.TAG_NAME }}"
+        run: git push origin "${{ env.NEXT_VERSION }}"
         env:
-          TAG_NAME: ${{ steps.get-tag-name.outputs.tag-name }}
+          NEXT_VERSION: ${{ steps.get-next-version.outputs.next-version }}

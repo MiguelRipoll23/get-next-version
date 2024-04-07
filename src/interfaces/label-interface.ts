@@ -1,3 +1,3 @@
 export interface Label {
-  name?: string | undefined;
+  name?: string | undefined
 }

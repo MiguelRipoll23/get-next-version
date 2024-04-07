@@ -1,22 +1,34 @@
 {
-  "name": "create-tag-name",
+  "name": "get-next-version",
+  "description": "Bump versions with the help of semantic versioning and pull requests labels",
   "version": "2.1.2",
-  "description": "Generate tag names with the help of semantic versioning and pull requests labels.",
-  "main": "lib/main.js",
+  "author": "MiguelRipoll23",
   "scripts": {
-    "build": "tsc && prettier --write . && eslint src/**/*.ts",
+    "bundle": "npm run format:write && npm run package",
+    "format:write": "npx prettier --write .",
+    "format:check": "npx prettier --check .",
+    "lint": "npx eslint . -c ./.github/linters/.eslintrc.yml",
     "test": "git branch -f playground && git checkout playground && npm run package",
-    "package": "ncc build --source-map --license licenses.txt && git add dist/ -f"
+    "package": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MiguelRipoll23/release-action.git"
+    "url": "git+https://github.com/MiguelRipoll23/get-next-version.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MiguelRipoll23/get-next-version/issues"
   },
   "keywords": [
-    "release",
+    "bump",
+    "version",
     "action"
   ],
-  "author": "MiguelRipoll23",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.10.1",

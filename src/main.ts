@@ -1,25 +1,27 @@
-import * as core from "@actions/core";
-import { getLatestTag, setupOctokit } from "./services/github";
-import { getNewTagName } from "./services/version";
-import { TAG_NAME } from "./constants/version-constants";
+import * as core from '@actions/core'
+import { getLatestTag, setupOctokit } from './services/github'
+import { getNextVersion } from './services/version'
+import { NEXT_VERSION } from './constants/version-constants'
 
-async function run(): Promise<void> {
-  setupOctokit();
-
-  const latestTag = await getLatestTag();
-  const latestTagName = latestTag.tag_name;
-  core.info("Latest tag name: " + latestTagName);
-
-  const newTagName = await getNewTagName(latestTag);
-  core.info("New tag name: " + newTagName);
-
-  core.setOutput(TAG_NAME, newTagName);
+export async function run(): Promise<void> {
+  try {
+    runAction()
+  } catch (error) {
+    if (error instanceof Error) {
+      core.setFailed(error.message)
+    }
+  }
 }
 
-try {
-  run();
-} catch (error) {
-  if (error instanceof Error) {
-    core.setFailed(error.message);
-  }
+async function runAction(): Promise<void> {
+  setupOctokit()
+
+  const latestTag = await getLatestTag()
+  const latestTagName = latestTag.tag_name
+  core.info('Latest tag name: ' + latestTagName)
+
+  const newTagName = await getNextVersion(latestTag)
+  core.info('Next version: ' + newTagName)
+
+  core.setOutput(NEXT_VERSION, newTagName)
 }
