@@ -1,4 +1,4 @@
-name: 'Get Next Version'
+name: 'Get Next Version (PR)'
 description:
   'Bump versions with the help of semantic versioning and pull requests labels'
 author: 'MiguelRipoll23'
