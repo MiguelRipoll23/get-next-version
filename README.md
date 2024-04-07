@@ -10,7 +10,7 @@ Bump versions with the help of semantic versioning and pull requests labels.
     🚫 Improve code formatter
     New tag name: v1.1.0
 
-Voilà! That's your new tag name just for you.
+Voilà! That's your next version.
 
 ## Usage
 
@@ -26,16 +26,14 @@ Voilà! That's your new tag name just for you.
         uses: actions/setup-node@v4.0.1
 
       - name: Get next version
-        uses: MiguelRipoll23/get-next-version@v2.1.2
+        uses: MiguelRipoll23/get-next-version@v3.0.0
         id: get-next-version
-        with:
-          channel: ${{ inputs.channel }}
 
       - name: Update version
         run: |
-          npm version --no-git-tag-version ${{ env.TAG_NAME }}
+          npm version --no-git-tag-version ${{ env.NEXT_VERSION }}
         env:
-          TAG_NAME: ${{ steps.get-next-version.outputs.next-version }}
+          NEXT_VERSION: ${{ steps.get-next-version.outputs.next-version }}
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
