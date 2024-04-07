@@ -31,9 +31,9 @@ Voilà! That's your next version.
 
       - name: Update version
         run: |
-          npm version --no-git-tag-version ${{ env.TAG_NAME }}
+          npm version --no-git-tag-version ${{ env.NEXT_VERSION }}
         env:
-          TAG_NAME: ${{ steps.get-next-version.outputs.next-version }}
+          NEXT_VERSION: ${{ steps.get-next-version.outputs.next-version }}
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
