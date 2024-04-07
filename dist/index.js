@@ -33209,19 +33209,19 @@ const github_1 = __nccwpck_require__(9621);
 async function getNextVersion(latestTag) {
     const tagName = latestTag.tag_name;
     const tagCreatedAt = latestTag.created_at;
-    const newTagName = await getNewVersionName(tagName, tagCreatedAt);
+    const nextVersion = await getNextVersionUsingLatestTag(tagName, tagCreatedAt);
     // Error if no changes found
-    if (newTagName === null) {
+    if (nextVersion === null) {
         throw new Error(version_constants_1.NO_CHANGES_FOUND);
     }
     // Add version prefix
     if (tagName.includes(version_constants_1.V)) {
-        return version_constants_1.V + newTagName;
+        return version_constants_1.V + nextVersion;
     }
-    return newTagName;
+    return nextVersion;
 }
 exports.getNextVersion = getNextVersion;
-async function getNewVersionName(tagName, tagCreatedAt) {
+async function getNextVersionUsingLatestTag(tagName, tagCreatedAt) {
     let kind = version_constants_1.UNKNOWN;
     const channel = core.getInput(version_constants_1.CHANNEL, { required: true });
     const newBuildForPrerelease = core.getBooleanInput(version_constants_1.NEW_BUILD_FOR_PRERELEASE);

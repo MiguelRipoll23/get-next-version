@@ -27,22 +27,22 @@ export async function getNextVersion(latestTag: Tag): Promise<string> {
   const tagName = latestTag.tag_name
   const tagCreatedAt = latestTag.created_at
 
-  const newTagName = await getNewVersionName(tagName, tagCreatedAt)
+  const nextVersion = await getNextVersionUsingLatestTag(tagName, tagCreatedAt)
 
   // Error if no changes found
-  if (newTagName === null) {
+  if (nextVersion === null) {
     throw new Error(NO_CHANGES_FOUND)
   }
 
   // Add version prefix
   if (tagName.includes(V)) {
-    return V + newTagName
+    return V + nextVersion
   }
 
-  return newTagName
+  return nextVersion
 }
 
-async function getNewVersionName(
+async function getNextVersionUsingLatestTag(
   tagName: string,
   tagCreatedAt: string
 ): Promise<string | null> {
