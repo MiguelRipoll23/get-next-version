@@ -8,7 +8,7 @@ Bump versions with the help of semantic versioning and pull requests labels.
     🚫 Update developer dependency
     🛠️ Fix severe bug found after decades
     🚫 Improve code formatter
-    New tag name: v1.1.0
+    Next version: v1.1.0
 
 Voilà! That's your next version.
 
