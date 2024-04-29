@@ -9,3 +9,18 @@ updates:
     directory: /
     schedule:
       interval: daily
+    groups:
+      dev-dependencies:
+        patterns:
+          - "actions/upload-artifact"
+          - "actions/download-artifact"
+          - "@types/node"
+          - "@typescript-eslint/eslint-plugin"
+          - "@typescript-eslint/parser"
+          - "@vercel/ncc"
+          - "eslint"
+          - "eslint-plugin-github"
+          - "eslint-plugin-jsonc"
+          - "eslint-plugin-prettier"
+          - "prettier"
+          - "typescript"
