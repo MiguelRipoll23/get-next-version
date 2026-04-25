@@ -43,5 +43,5 @@ outputs:
     description: 'Next version to use for a new release'
 
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/index.js'

@@ -12,6 +12,11 @@ Bump versions with the help of semantic versioning and pull requests labels.
 
 Voilà! That's your next version.
 
+
+## Requirements
+
+- Node.js 24 or newer
+
 ## Usage
 
     bump-version:
@@ -24,6 +29,8 @@ Voilà! That's your next version.
       steps:
       - name: Setup node
         uses: actions/setup-node@v4.0.1
+        with:
+          node-version: 24
 
       - name: Get next version
         uses: MiguelRipoll23/get-next-version@v3.0.0
