@@ -33060,9 +33060,9 @@ async function runAction() {
     (0, github_1.setupOctokit)();
     const latestTag = await (0, github_1.getLatestTag)();
     const latestTagName = latestTag.tag_name;
-    core.info('Latest tag name: ' + latestTagName);
+    core.info(`Latest tag name: ${latestTagName}`);
     const newTagName = await (0, version_1.getNextVersion)(latestTag);
-    core.info('Next version: ' + newTagName);
+    core.info(`Next version: ${newTagName}`);
     core.setOutput(version_constants_1.NEXT_VERSION, newTagName);
 }
 
@@ -33127,7 +33127,7 @@ async function getLatestTag() {
                 throw new Error(github_constants_1.NO_RELEASES_FOUND);
             }
             else {
-                throw new Error(github_constants_1.RELEASES_LISTING_FAILED + ' (' + message + ')');
+                throw new Error(`${github_constants_1.RELEASES_LISTING_FAILED} (${message})`);
             }
         }
         throw error;
@@ -33150,7 +33150,7 @@ async function getMergedPullRequestsFilteredByCreated(createdAt) {
         base = ref.replace(github_constants_1.REFS_HEADS, '');
     }
     const query = `repo:${owner}/${repo} is:pr is:merged base:${base} created:>=${createdAt}`;
-    core.debug('Query: ' + query);
+    core.debug(`Query: ${query}`);
     let response = null;
     try {
         response = await octokit.paginate(octokit.rest.search.issuesAndPullRequests, {
@@ -33160,11 +33160,11 @@ async function getMergedPullRequestsFilteredByCreated(createdAt) {
     catch (error) {
         if (error instanceof Error) {
             const { message } = error;
-            throw new Error(github_constants_1.PULL_REQUESTS_SEARCH_FAILED + ' (' + message + ')');
+            throw new Error(`${github_constants_1.PULL_REQUESTS_SEARCH_FAILED} (${message})`);
         }
         throw error;
     }
-    core.info('Merged pull requests (' + response.length + ')');
+    core.info(`Merged pull requests (${response.length})`);
     return response;
 }
 exports.getMergedPullRequestsFilteredByCreated = getMergedPullRequestsFilteredByCreated;
@@ -33243,7 +33243,7 @@ async function getNextVersionUsingLatestTag(tagName, tagCreatedAt) {
         // 1.0.0 -> 1.0.1 -> 1.1.0 -> 2.0.0
         kind = await getKindByPullRequestsLabels(tagCreatedAt);
     }
-    core.debug('Kind: ' + kind);
+    core.debug(`Kind: ${kind}`);
     switch (kind) {
         case version_constants_1.NONE:
             return getVersionNameWithoutPrerelease(version);
@@ -33327,7 +33327,7 @@ function getPatchLabels() {
     return patchLabels.split(',');
 }
 function logPullRequestTitleWithEmoji(emoji, title) {
-    core.info(emoji + ' ' + title);
+    core.info(`${emoji} ${title}`);
 }
 function getVersionNameWithoutPrerelease(version) {
     version.prerelease = [];

@@ -18,10 +18,10 @@ async function runAction(): Promise<void> {
 
   const latestTag = await getLatestTag()
   const latestTagName = latestTag.tag_name
-  core.info('Latest tag name: ' + latestTagName)
+  core.info(`Latest tag name: ${latestTagName}`)
 
   const newTagName = await getNextVersion(latestTag)
-  core.info('Next version: ' + newTagName)
+  core.info(`Next version: ${newTagName}`)
 
   core.setOutput(NEXT_VERSION, newTagName)
 }

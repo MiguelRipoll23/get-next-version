@@ -41,7 +41,7 @@ export async function getLatestTag(): Promise<Tag> {
       if (message.includes(NOT_FOUND)) {
         throw new Error(NO_RELEASES_FOUND)
       } else {
-        throw new Error(RELEASES_LISTING_FAILED + ' (' + message + ')')
+        throw new Error(`${RELEASES_LISTING_FAILED} (${message})`)
       }
     }
 
@@ -73,7 +73,7 @@ export async function getMergedPullRequestsFilteredByCreated(
   }
 
   const query = `repo:${owner}/${repo} is:pr is:merged base:${base} created:>=${createdAt}`
-  core.debug('Query: ' + query)
+  core.debug(`Query: ${query}`)
 
   let response = null
 
@@ -87,13 +87,13 @@ export async function getMergedPullRequestsFilteredByCreated(
   } catch (error) {
     if (error instanceof Error) {
       const { message } = error
-      throw new Error(PULL_REQUESTS_SEARCH_FAILED + ' (' + message + ')')
+      throw new Error(`${PULL_REQUESTS_SEARCH_FAILED} (${message})`)
     }
 
     throw error
   }
 
-  core.info('Merged pull requests (' + response.length + ')')
+  core.info(`Merged pull requests (${response.length})`)
 
   return response
 }

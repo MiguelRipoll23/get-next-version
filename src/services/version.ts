@@ -73,7 +73,7 @@ async function getNextVersionUsingLatestTag(
     kind = await getKindByPullRequestsLabels(tagCreatedAt)
   }
 
-  core.debug('Kind: ' + kind)
+  core.debug(`Kind: ${kind}`)
 
   switch (kind) {
     case NONE:
@@ -110,7 +110,9 @@ function parseVersionByName(tagName: string): SemVer {
   return version
 }
 
-async function getKindByPullRequestsLabels(tagCreatedAt: string) {
+async function getKindByPullRequestsLabels(
+  tagCreatedAt: string
+): Promise<'major' | 'minor' | 'patch' | 'unknown'> {
   let kind: 'major' | 'minor' | 'patch' | 'unknown' = UNKNOWN
 
   const mergedPullRequests: PullRequest[] =
@@ -189,7 +191,7 @@ function getPatchLabels(): string[] {
 }
 
 function logPullRequestTitleWithEmoji(emoji: string, title: string): void {
-  core.info(emoji + ' ' + title)
+  core.info(`${emoji} ${title}`)
 }
 
 function getVersionNameWithoutPrerelease(version: SemVer): string {
