@@ -10,9 +10,9 @@ import {
   PULL_REQUESTS_SEARCH_FAILED,
   REFS_HEADS,
   RELEASES_LISTING_FAILED
-} from '../constants/github-constants'
-import { Tag } from '../interfaces/tag-interface'
-import { PullRequest } from '../interfaces/pull-request-interface'
+} from '../constants/github-constants.js'
+import { Tag } from '../interfaces/tag-interface.js'
+import { PullRequest } from '../interfaces/pull-request-interface.js'
 
 let octokit: InstanceType<typeof GitHub> | null = null
 

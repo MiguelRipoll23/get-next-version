@@ -1,5 +1,6 @@
 {
   "name": "get-next-version",
+  "type": "module",
   "description": "Bump versions with the help of semantic versioning and pull requests labels",
   "version": "3.0.0",
   "author": "MiguelRipoll23",
@@ -7,7 +8,7 @@
     "bundle": "npm run format:write && npm run package",
     "format:write": "npx prettier --write .",
     "format:check": "npx prettier --check .",
-    "lint": "npx eslint . -c ./.github/linters/.eslintrc.yml",
+    "lint": "npx eslint .",
     "test": "git branch -f playground && git checkout playground && npm run package",
     "package": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt"
   },
@@ -37,10 +38,11 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.0",
+    "@types/semver": "^7.7.1",
     "@typescript-eslint/eslint-plugin": "^8.59.4",
     "@typescript-eslint/parser": "^8.59.1",
     "@vercel/ncc": "^0.38.4",
-    "eslint": "^10.4.0",
+    "eslint": "^9.28.0",
     "eslint-plugin-github": "^6.0.0",
     "eslint-plugin-jsonc": "^3.1.2",
     "eslint-plugin-prettier": "^5.1.3",

@@ -16,11 +16,11 @@ import {
   STABLE,
   UNKNOWN,
   V
-} from '../constants/version-constants'
-import { PullRequest } from '../interfaces/pull-request-interface'
-import { Label } from '../interfaces/label-interface'
-import { getMergedPullRequestsFilteredByCreated } from './github'
-import { Tag } from '../interfaces/tag-interface'
+} from '../constants/version-constants.js'
+import { PullRequest } from '../interfaces/pull-request-interface.js'
+import { Label } from '../interfaces/label-interface.js'
+import { getMergedPullRequestsFilteredByCreated } from './github.js'
+import { Tag } from '../interfaces/tag-interface.js'
 import { SemVer } from 'semver'
 
 export async function getNextVersion(latestTag: Tag): Promise<string> {
