@@ -10,7 +10,7 @@
     "format:check": "npx prettier --check .",
     "lint": "npx eslint .",
     "test": "git branch -f playground && git checkout playground && npm run package",
-    "package": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt"
+    "package": "npx ncc build src/index.ts -o dist --license licenses.txt"
   },
   "repository": {
     "type": "git",
