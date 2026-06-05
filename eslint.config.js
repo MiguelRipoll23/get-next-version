@@ -1,32 +1,46 @@
-import tseslint from '@typescript-eslint/eslint-plugin'
-import tsparser from '@typescript-eslint/parser'
-import prettierPlugin from 'eslint-plugin-prettier'
+import js from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import prettierRecommended from 'eslint-plugin-prettier/recommended'
+import globals from 'globals'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
 
-export default [
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+export default tseslint.config(
   {
-    ignores: ['lib/**', 'dist/**', 'node_modules/**', 'coverage/**']
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'coverage/**',
+      'lib/**',
+      '**/*.json'
+    ]
   },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  prettierRecommended,
   {
-    files: ['**/*.ts'],
     languageOptions: {
-      parser: tsparser,
-      parserOptions: {
-        ecmaVersion: 2023,
-        sourceType: 'module',
-        project: ['./tsconfig.json']
+      globals: {
+        ...globals.node,
+        ...globals.es2022,
+        Atomics: 'readonly',
+        SharedArrayBuffer: 'readonly'
       }
-    },
-    plugins: {
-      '@typescript-eslint': tseslint,
-      prettier: prettierPlugin
     },
     rules: {
       camelcase: 'off',
       'no-console': 'off',
       'no-unused-vars': 'off',
       'prettier/prettier': 'error',
+      semi: 'off'
+    }
+  },
+  {
+    files: ['**/*.ts'],
+    rules: {
       '@typescript-eslint/array-type': 'error',
-      '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/ban-ts-comment': 'error',
       '@typescript-eslint/consistent-type-assertions': 'error',
       '@typescript-eslint/explicit-member-accessibility': [
@@ -41,18 +55,30 @@ export default [
       '@typescript-eslint/no-empty-interface': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-extraneous-class': 'error',
-      '@typescript-eslint/no-for-in-array': 'error',
       '@typescript-eslint/no-inferrable-types': 'error',
-      '@typescript-eslint/no-misused-new': 'error',
       '@typescript-eslint/no-namespace': 'error',
       '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/no-require-imports': 'error',
-      '@typescript-eslint/no-unnecessary-qualifier': 'error',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-useless-constructor': 'error',
       '@typescript-eslint/prefer-for-of': 'warn',
-      '@typescript-eslint/prefer-function-type': 'warn',
+      '@typescript-eslint/prefer-function-type': 'warn'
+    }
+  },
+  {
+    files: ['src/**/*.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.json'],
+        tsconfigRootDir: __dirname
+      }
+    },
+    rules: {
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/no-for-in-array': 'error',
+      '@typescript-eslint/no-misused-new': 'error',
+      '@typescript-eslint/no-unnecessary-qualifier': 'error',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
       '@typescript-eslint/prefer-includes': 'error',
       '@typescript-eslint/prefer-string-starts-ends-with': 'error',
       '@typescript-eslint/promise-function-async': 'error',
@@ -61,4 +87,4 @@ export default [
       '@typescript-eslint/unbound-method': 'error'
     }
   }
-]
+)

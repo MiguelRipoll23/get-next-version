@@ -3,4 +3,4 @@
  */
 import { run } from './main.js'
 
-run()
+void run()

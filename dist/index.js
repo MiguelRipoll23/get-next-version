@@ -1,4 +1,4 @@
-import { createRequire as __WEBPACK_EXTERNAL_createRequire } from "module";
+import './sourcemap-register.cjs';import { createRequire as __WEBPACK_EXTERNAL_createRequire } from "module";
 /******/ var __webpack_modules__ = ({
 
 /***/ 9659:
@@ -34652,7 +34652,7 @@ function error(message, properties = {}) {
  * @param properties optional properties to add to the annotation.
  */
 function warning(message, properties = {}) {
-    issueCommand('warning', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('warning', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Adds a notice issue
@@ -39079,15 +39079,13 @@ const RELEASES_LISTING_FAILED = 'Releases listing failed';
 const PULL_REQUESTS_BASE_BRANCH = 'pull_requests_base_branch';
 const REFS_HEADS = 'refs/heads/';
 const PULL_REQUESTS_SEARCH_FAILED = 'Pull requests search failed';
-const CLOSED = 'closed';
-const MERGED_CHECK_FAILED = 'Merged check failed';
 
 ;// CONCATENATED MODULE: ./src/services/github.ts
 
 
 
 let octokit = null;
-async function setupOctokit() {
+function setupOctokit() {
     const token = getInput(GITHUB_TOKEN, { required: true });
     octokit = getOctokit(token);
 }
@@ -39096,32 +39094,32 @@ async function getLatestTag() {
         throw new Error(OCTOKIT_NOT_INITIALIZED);
     const { /* context */ "_": context } = github_namespaceObject;
     const { repo } = context;
-    let response = null;
     try {
-        response = await octokit.rest.repos.listReleases({
+        const response = await octokit.rest.repos.listReleases({
             ...repo,
             per_page: 1
         });
+        if (response.data.length === 0) {
+            throw new Error(NO_RELEASES_FOUND);
+        }
+        return response.data[0];
     }
     catch (error) {
         if (error instanceof Error) {
-            const { message } = error;
-            if (message.includes(NOT_FOUND)) {
-                throw new Error(NO_RELEASES_FOUND);
+            if (error.message === NO_RELEASES_FOUND) {
+                throw error;
             }
-            else {
-                throw new Error(`${RELEASES_LISTING_FAILED} (${message})`);
+            if (error.message.includes(NOT_FOUND)) {
+                throw new Error(NO_RELEASES_FOUND, { cause: error });
             }
+            throw new Error(RELEASES_LISTING_FAILED + ' (' + error.message + ')', {
+                cause: error
+            });
         }
         throw error;
     }
-    const { data } = response;
-    if (data.length === 0) {
-        throw new Error(NO_RELEASES_FOUND);
-    }
-    return data[0];
 }
-async function getMergedPullRequestsFilteredByCreated(createdAt) {
+async function getMergedPullRequestsFilteredByCreated(createdAt, stopOnLabels = []) {
     if (octokit === null)
         throw new Error(OCTOKIT_NOT_INITIALIZED);
     const { /* context */ "_": context } = github_namespaceObject;
@@ -39132,22 +39130,31 @@ async function getMergedPullRequestsFilteredByCreated(createdAt) {
         base = ref.replace(REFS_HEADS, '');
     }
     const query = `repo:${owner}/${repo} is:pr is:merged base:${base} created:>=${createdAt}`;
-    core_debug(`Query: ${query}`);
-    let response = null;
+    core_debug('Query: ' + query);
     try {
-        response = await octokit.paginate(octokit.rest.search.issuesAndPullRequests, {
-            q: query
-        });
+        const response = (await octokit.paginate(octokit.rest.search.issuesAndPullRequests, { q: query, per_page: 100 }, (pageResponse, done) => {
+            if (stopOnLabels.length > 0) {
+                const foundStop = pageResponse.data.some(item => item.labels.some(l => typeof l.name === 'string' && stopOnLabels.includes(l.name)));
+                if (foundStop)
+                    done();
+            }
+            return pageResponse.data;
+        }));
+        if (response.length === 1000) {
+            warning('Pull request search returned 1,000 results (GitHub Search API hard limit). ' +
+                'Some PRs may have been omitted — version bump may be under-calculated.');
+        }
+        info('Merged pull requests (' + response.length + ')');
+        return response;
     }
     catch (error) {
         if (error instanceof Error) {
-            const { message } = error;
-            throw new Error(`${PULL_REQUESTS_SEARCH_FAILED} (${message})`);
+            throw new Error(PULL_REQUESTS_SEARCH_FAILED + ' (' + error.message + ')', {
+                cause: error
+            });
         }
         throw error;
     }
-    info(`Merged pull requests (${response.length})`);
-    return response;
 }
 
 // EXTERNAL MODULE: ./node_modules/semver/index.js
@@ -39179,31 +39186,28 @@ async function getNextVersion(latestTag) {
     const tagName = latestTag.tag_name;
     const tagCreatedAt = latestTag.created_at;
     const nextVersion = await getNextVersionUsingLatestTag(tagName, tagCreatedAt);
-    // Error if no changes found
     if (nextVersion === null) {
         throw new Error(NO_CHANGES_FOUND);
     }
-    // Add version prefix
     if (tagName.includes(V)) {
         return V + nextVersion;
     }
     return nextVersion;
 }
 async function getNextVersionUsingLatestTag(tagName, tagCreatedAt) {
-    let kind = UNKNOWN;
+    let kind;
     const channel = getInput(CHANNEL, { required: true });
     const newBuildForPrerelease = getBooleanInput(NEW_BUILD_FOR_PRERELEASE);
     const version = parseVersionByName(tagName);
     const prereleaseId = version.prerelease.length > 0 ? version.prerelease[0] : STABLE;
     const isStableChannel = channel === STABLE;
     const isDifferentChannel = channel !== prereleaseId;
-    const isPrereleaseChannel = channel !== STABLE;
     const hasPrereleaseId = version.prerelease.length > 0;
     if (isStableChannel && isDifferentChannel) {
         // beta.1 -> stable
         kind = NONE;
     }
-    else if (newBuildForPrerelease && isPrereleaseChannel && hasPrereleaseId) {
+    else if (newBuildForPrerelease && !isStableChannel && hasPrereleaseId) {
         // alpha.1 -> alpha.2 -> beta.1
         kind = PRERELEASE;
     }
@@ -39211,7 +39215,7 @@ async function getNextVersionUsingLatestTag(tagName, tagCreatedAt) {
         // 1.0.0 -> 1.0.1 -> 1.1.0 -> 2.0.0
         kind = await getKindByPullRequestsLabels(tagCreatedAt);
     }
-    core_debug(`Kind: ${kind}`);
+    core_debug('Kind: ' + kind);
     switch (kind) {
         case NONE:
             return getVersionNameWithoutPrerelease(version);
@@ -39239,42 +39243,26 @@ function parseVersionByName(tagName) {
 }
 async function getKindByPullRequestsLabels(tagCreatedAt) {
     let kind = UNKNOWN;
-    const mergedPullRequests = await getMergedPullRequestsFilteredByCreated(tagCreatedAt);
-    const majorLabels = getMajorLabels();
-    const minorLabels = getMinorLabels();
-    const patchLabels = getPatchLabels();
+    const majorLabels = getLabels(MAJOR_LABELS);
+    const minorLabels = getLabels(MINOR_LABELS);
+    const patchLabels = getLabels(PATCH_LABELS);
+    const mergedPullRequests = await getMergedPullRequestsFilteredByCreated(tagCreatedAt, majorLabels);
     for (const mergedPullRequest of mergedPullRequests) {
         const { title, labels } = mergedPullRequest;
-        const hasMajorLabel = labels.some((label) => {
-            if (typeof label.name === 'string') {
-                return majorLabels.includes(label.name);
-            }
-            return false;
-        });
-        if (hasMajorLabel) {
+        if (hasLabel(labels, majorLabels)) {
             kind = MAJOR;
             logPullRequestTitleWithEmoji('🚨', title);
             break;
         }
-        const hasMinorLabel = labels.some((label) => {
-            if (typeof label.name === 'string') {
-                return minorLabels.includes(label.name);
-            }
-            return false;
-        });
-        if (hasMinorLabel) {
-            kind = kind === UNKNOWN || kind === PATCH ? MINOR : kind;
+        if (hasLabel(labels, minorLabels)) {
+            if (kind !== MINOR)
+                kind = MINOR;
             logPullRequestTitleWithEmoji('✨', title);
             continue;
         }
-        const hasPatchLabel = labels.some((label) => {
-            if (typeof label.name === 'string') {
-                return patchLabels.includes(label.name);
-            }
-            return false;
-        });
-        if (hasPatchLabel) {
-            kind = kind === UNKNOWN ? PATCH : kind;
+        if (hasLabel(labels, patchLabels)) {
+            if (kind === UNKNOWN)
+                kind = PATCH;
             logPullRequestTitleWithEmoji('🛠️', title);
             continue;
         }
@@ -39282,61 +39270,50 @@ async function getKindByPullRequestsLabels(tagCreatedAt) {
     }
     return kind;
 }
-function getMajorLabels() {
-    const majorLabels = getInput(MAJOR_LABELS);
-    return majorLabels.split(',');
+function getLabels(inputName) {
+    return getInput(inputName)
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
 }
-function getMinorLabels() {
-    const minorLabels = getInput(MINOR_LABELS);
-    return minorLabels.split(',');
-}
-function getPatchLabels() {
-    const patchLabels = getInput(PATCH_LABELS);
-    return patchLabels.split(',');
+function hasLabel(labels, allowed) {
+    return labels.some((label) => typeof label.name === 'string' && allowed.includes(label.name));
 }
 function logPullRequestTitleWithEmoji(emoji, title) {
-    info(`${emoji} ${title}`);
+    info(emoji + ' ' + title);
 }
 function getVersionNameWithoutPrerelease(version) {
     version.prerelease = [];
+    return version.format();
+}
+function applyChannelAndFormat(version, channel) {
+    if (channel === STABLE) {
+        version.prerelease = [];
+    }
+    else {
+        version.prerelease = [channel, 1];
+    }
     return version.format();
 }
 function getMajorVersionName(version, channel) {
     version.major++;
     version.minor = 0;
     version.patch = 0;
-    if (channel === STABLE) {
-        version.prerelease = [];
-    }
-    else {
-        version.prerelease = [channel, 1];
-    }
-    return version.format();
+    return applyChannelAndFormat(version, channel);
 }
 function getMinorVersionName(version, channel) {
     version.minor++;
     version.patch = 0;
-    if (channel === STABLE) {
-        version.prerelease = [];
-    }
-    else {
-        version.prerelease = [channel, 1];
-    }
-    return version.format();
+    return applyChannelAndFormat(version, channel);
 }
 function getPatchVersionName(version, channel) {
     version.patch++;
-    if (channel === STABLE) {
-        version.prerelease = [];
-    }
-    else {
-        version.prerelease = [channel, 1];
-    }
-    return version.format();
+    return applyChannelAndFormat(version, channel);
 }
 function getPrereleaseVersionName(version, channel) {
-    const [prereleaseId, prereleaseCount] = version.prerelease;
-    if (prereleaseId === channel) {
+    const prereleaseId = version.prerelease[0];
+    const prereleaseCount = typeof version.prerelease[1] === 'number' ? version.prerelease[1] : 0;
+    if (typeof prereleaseId === 'string' && prereleaseId === channel) {
         version.prerelease = [channel, prereleaseCount + 1];
     }
     else {
@@ -39352,11 +39329,14 @@ function getPrereleaseVersionName(version, channel) {
 
 async function run() {
     try {
-        runAction();
+        await runAction();
     }
     catch (error) {
         if (error instanceof Error) {
             setFailed(error.message);
+        }
+        else {
+            setFailed(String(error));
         }
     }
 }
@@ -39364,9 +39344,9 @@ async function runAction() {
     setupOctokit();
     const latestTag = await getLatestTag();
     const latestTagName = latestTag.tag_name;
-    info(`Latest tag name: ${latestTagName}`);
+    info('Latest tag name: ' + latestTagName);
     const newTagName = await getNextVersion(latestTag);
-    info(`Next version: ${newTagName}`);
+    info('Next version: ' + newTagName);
     setOutput(NEXT_VERSION, newTagName);
 }
 
@@ -39375,5 +39355,7 @@ async function runAction() {
  * The entrypoint for the action.
  */
 
-run();
+void run();
 
+
+//# sourceMappingURL=index.js.map
