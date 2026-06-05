@@ -1,14 +1,16 @@
 import * as core from '@actions/core'
-import { getLatestTag, setupOctokit } from './services/github'
-import { getNextVersion } from './services/version'
-import { NEXT_VERSION } from './constants/version-constants'
+import { getLatestTag, setupOctokit } from './services/github.js'
+import { getNextVersion } from './services/version.js'
+import { NEXT_VERSION } from './constants/version-constants.js'
 
 export async function run(): Promise<void> {
   try {
-    runAction()
+    await runAction()
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message)
+    } else {
+      core.setFailed(String(error))
     }
   }
 }

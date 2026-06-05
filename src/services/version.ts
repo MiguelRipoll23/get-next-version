@@ -16,11 +16,11 @@ import {
   STABLE,
   UNKNOWN,
   V
-} from '../constants/version-constants'
-import { PullRequest } from '../interfaces/pull-request-interface'
-import { Label } from '../interfaces/label-interface'
-import { getMergedPullRequestsFilteredByCreated } from './github'
-import { Tag } from '../interfaces/tag-interface'
+} from '../constants/version-constants.js'
+import { PullRequest } from '../interfaces/pull-request-interface.js'
+import { Label } from '../interfaces/label-interface.js'
+import { getMergedPullRequestsFilteredByCreated } from './github.js'
+import { Tag } from '../interfaces/tag-interface.js'
 import { SemVer } from 'semver'
 
 export async function getNextVersion(latestTag: Tag): Promise<string> {
@@ -29,12 +29,10 @@ export async function getNextVersion(latestTag: Tag): Promise<string> {
 
   const nextVersion = await getNextVersionUsingLatestTag(tagName, tagCreatedAt)
 
-  // Error if no changes found
   if (nextVersion === null) {
     throw new Error(NO_CHANGES_FOUND)
   }
 
-  // Add version prefix
   if (tagName.includes(V)) {
     return V + nextVersion
   }
@@ -46,8 +44,7 @@ async function getNextVersionUsingLatestTag(
   tagName: string,
   tagCreatedAt: string
 ): Promise<string | null> {
-  let kind: 'unknown' | 'none' | 'major' | 'minor' | 'patch' | 'prerelease' =
-    UNKNOWN
+  let kind: 'unknown' | 'none' | 'major' | 'minor' | 'patch' | 'prerelease'
 
   const channel = core.getInput(CHANNEL, { required: true })
   const newBuildForPrerelease = core.getBooleanInput(NEW_BUILD_FOR_PRERELEASE)
@@ -58,14 +55,12 @@ async function getNextVersionUsingLatestTag(
 
   const isStableChannel = channel === STABLE
   const isDifferentChannel = channel !== prereleaseId
-
-  const isPrereleaseChannel = channel !== STABLE
   const hasPrereleaseId = version.prerelease.length > 0
 
   if (isStableChannel && isDifferentChannel) {
     // beta.1 -> stable
     kind = NONE
-  } else if (newBuildForPrerelease && isPrereleaseChannel && hasPrereleaseId) {
+  } else if (newBuildForPrerelease && !isStableChannel && hasPrereleaseId) {
     // alpha.1 -> alpha.2 -> beta.1
     kind = PRERELEASE
   } else {
@@ -110,56 +105,35 @@ function parseVersionByName(tagName: string): SemVer {
   return version
 }
 
-async function getKindByPullRequestsLabels(tagCreatedAt: string) {
+async function getKindByPullRequestsLabels(
+  tagCreatedAt: string
+): Promise<'major' | 'minor' | 'patch' | 'unknown'> {
   let kind: 'major' | 'minor' | 'patch' | 'unknown' = UNKNOWN
 
-  const mergedPullRequests: PullRequest[] =
-    await getMergedPullRequestsFilteredByCreated(tagCreatedAt)
+  const majorLabels = getLabels(MAJOR_LABELS)
+  const minorLabels = getLabels(MINOR_LABELS)
+  const patchLabels = getLabels(PATCH_LABELS)
 
-  const majorLabels = getMajorLabels()
-  const minorLabels = getMinorLabels()
-  const patchLabels = getPatchLabels()
+  const mergedPullRequests: PullRequest[] =
+    await getMergedPullRequestsFilteredByCreated(tagCreatedAt, majorLabels)
 
   for (const mergedPullRequest of mergedPullRequests) {
     const { title, labels } = mergedPullRequest
 
-    const hasMajorLabel = labels.some((label: Label) => {
-      if (typeof label.name === 'string') {
-        return majorLabels.includes(label.name)
-      }
-      return false
-    })
-
-    if (hasMajorLabel) {
+    if (hasLabel(labels, majorLabels)) {
       kind = MAJOR
       logPullRequestTitleWithEmoji('🚨', title)
       break
     }
 
-    const hasMinorLabel = labels.some((label: Label) => {
-      if (typeof label.name === 'string') {
-        return minorLabels.includes(label.name)
-      }
-
-      return false
-    })
-
-    if (hasMinorLabel) {
-      kind = kind === UNKNOWN || kind === PATCH ? MINOR : kind
+    if (hasLabel(labels, minorLabels)) {
+      if (kind !== MINOR) kind = MINOR
       logPullRequestTitleWithEmoji('✨', title)
       continue
     }
 
-    const hasPatchLabel = labels.some((label: Label) => {
-      if (typeof label.name === 'string') {
-        return patchLabels.includes(label.name)
-      }
-
-      return false
-    })
-
-    if (hasPatchLabel) {
-      kind = kind === UNKNOWN ? PATCH : kind
+    if (hasLabel(labels, patchLabels)) {
+      if (kind === UNKNOWN) kind = PATCH
       logPullRequestTitleWithEmoji('🛠️', title)
       continue
     }
@@ -170,22 +144,19 @@ async function getKindByPullRequestsLabels(tagCreatedAt: string) {
   return kind
 }
 
-function getMajorLabels(): string[] {
-  const majorLabels = core.getInput(MAJOR_LABELS)
-
-  return majorLabels.split(',')
+function getLabels(inputName: string): string[] {
+  return core
+    .getInput(inputName)
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
 }
 
-function getMinorLabels(): string[] {
-  const minorLabels = core.getInput(MINOR_LABELS)
-
-  return minorLabels.split(',')
-}
-
-function getPatchLabels(): string[] {
-  const patchLabels = core.getInput(PATCH_LABELS)
-
-  return patchLabels.split(',')
+function hasLabel(labels: Label[], allowed: string[]): boolean {
+  return labels.some(
+    (label: Label) =>
+      typeof label.name === 'string' && allowed.includes(label.name)
+  )
 }
 
 function logPullRequestTitleWithEmoji(emoji: string, title: string): void {
@@ -198,11 +169,7 @@ function getVersionNameWithoutPrerelease(version: SemVer): string {
   return version.format()
 }
 
-function getMajorVersionName(version: SemVer, channel: string): string {
-  version.major++
-  version.minor = 0
-  version.patch = 0
-
+function applyChannelAndFormat(version: SemVer, channel: string): string {
   if (channel === STABLE) {
     version.prerelease = []
   } else {
@@ -210,37 +177,35 @@ function getMajorVersionName(version: SemVer, channel: string): string {
   }
 
   return version.format()
+}
+
+function getMajorVersionName(version: SemVer, channel: string): string {
+  version.major++
+  version.minor = 0
+  version.patch = 0
+
+  return applyChannelAndFormat(version, channel)
 }
 
 function getMinorVersionName(version: SemVer, channel: string): string {
   version.minor++
   version.patch = 0
 
-  if (channel === STABLE) {
-    version.prerelease = []
-  } else {
-    version.prerelease = [channel, 1]
-  }
-
-  return version.format()
+  return applyChannelAndFormat(version, channel)
 }
 
 function getPatchVersionName(version: SemVer, channel: string): string {
   version.patch++
 
-  if (channel === STABLE) {
-    version.prerelease = []
-  } else {
-    version.prerelease = [channel, 1]
-  }
-
-  return version.format()
+  return applyChannelAndFormat(version, channel)
 }
 
 function getPrereleaseVersionName(version: SemVer, channel: string): string {
-  const [prereleaseId, prereleaseCount] = version.prerelease as [string, number]
+  const prereleaseId = version.prerelease[0]
+  const prereleaseCount =
+    typeof version.prerelease[1] === 'number' ? version.prerelease[1] : 0
 
-  if (prereleaseId === channel) {
+  if (typeof prereleaseId === 'string' && prereleaseId === channel) {
     version.prerelease = [channel, prereleaseCount + 1]
   } else {
     version.prerelease = [channel, 1]

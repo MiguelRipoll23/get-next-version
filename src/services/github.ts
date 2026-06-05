@@ -10,13 +10,13 @@ import {
   PULL_REQUESTS_SEARCH_FAILED,
   REFS_HEADS,
   RELEASES_LISTING_FAILED
-} from '../constants/github-constants'
-import { Tag } from '../interfaces/tag-interface'
-import { PullRequest } from '../interfaces/pull-request-interface'
+} from '../constants/github-constants.js'
+import { Tag } from '../interfaces/tag-interface.js'
+import { PullRequest } from '../interfaces/pull-request-interface.js'
 
 let octokit: InstanceType<typeof GitHub> | null = null
 
-export async function setupOctokit(): Promise<void> {
+export function setupOctokit(): void {
   const token = core.getInput(GITHUB_TOKEN, { required: true })
   octokit = github.getOctokit(token)
 }
@@ -27,38 +27,36 @@ export async function getLatestTag(): Promise<Tag> {
   const { context } = github
   const { repo } = context
 
-  let response = null
-
   try {
-    response = await octokit.rest.repos.listReleases({
+    const response = await octokit.rest.repos.listReleases({
       ...repo,
       per_page: 1
     })
-  } catch (error) {
-    if (error instanceof Error) {
-      const { message } = error
 
-      if (message.includes(NOT_FOUND)) {
-        throw new Error(NO_RELEASES_FOUND)
-      } else {
-        throw new Error(RELEASES_LISTING_FAILED + ' (' + message + ')')
-      }
+    if (response.data.length === 0) {
+      throw new Error(NO_RELEASES_FOUND)
     }
 
+    return response.data[0]
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === NO_RELEASES_FOUND) {
+        throw error
+      }
+      if (error.message.includes(NOT_FOUND)) {
+        throw new Error(NO_RELEASES_FOUND, { cause: error })
+      }
+      throw new Error(RELEASES_LISTING_FAILED + ' (' + error.message + ')', {
+        cause: error
+      })
+    }
     throw error
   }
-
-  const { data } = response
-
-  if (data.length === 0) {
-    throw new Error(NO_RELEASES_FOUND)
-  }
-
-  return data[0]
 }
 
 export async function getMergedPullRequestsFilteredByCreated(
-  createdAt: string
+  createdAt: string,
+  stopOnLabels: string[] = []
 ): Promise<PullRequest[]> {
   if (octokit === null) throw new Error(OCTOKIT_NOT_INITIALIZED)
 
@@ -75,25 +73,42 @@ export async function getMergedPullRequestsFilteredByCreated(
   const query = `repo:${owner}/${repo} is:pr is:merged base:${base} created:>=${createdAt}`
   core.debug('Query: ' + query)
 
-  let response = null
-
   try {
-    response = await octokit.paginate(
+    const response = (await octokit.paginate(
       octokit.rest.search.issuesAndPullRequests,
-      {
-        q: query
+      { q: query, per_page: 100 },
+      (pageResponse, done) => {
+        if (stopOnLabels.length > 0) {
+          const foundStop = pageResponse.data.some(item =>
+            item.labels.some(
+              l => typeof l.name === 'string' && stopOnLabels.includes(l.name)
+            )
+          )
+          if (foundStop) done()
+        }
+        return pageResponse.data
       }
-    )
-  } catch (error) {
-    if (error instanceof Error) {
-      const { message } = error
-      throw new Error(PULL_REQUESTS_SEARCH_FAILED + ' (' + message + ')')
+    )) as unknown as PullRequest[]
+
+    if (response.length === 1000) {
+      core.warning(
+        'Pull request search returned 1,000 results (GitHub Search API hard limit). ' +
+          'Some PRs may have been omitted — version bump may be under-calculated.'
+      )
     }
 
+    core.info('Merged pull requests (' + response.length + ')')
+
+    return response
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(
+        PULL_REQUESTS_SEARCH_FAILED + ' (' + error.message + ')',
+        {
+          cause: error
+        }
+      )
+    }
     throw error
   }
-
-  core.info('Merged pull requests (' + response.length + ')')
-
-  return response
 }

@@ -1,4 +1,4 @@
-import { Label } from './label-interface'
+import { Label } from './label-interface.js'
 
 export interface PullRequest {
   id: number
