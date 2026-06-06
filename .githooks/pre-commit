@@ -4,5 +4,5 @@
 if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^src/|^package\.json|^package-lock\.json'; then
   echo "🔨 Rebuilding dist/..."
   npm run package || exit 1
-  git add dist/index.js dist/index.js.map dist/licenses.txt dist/sourcemap-register.cjs dist/package.json 2>/dev/null
+  git add dist/index.js dist/index.js.map 2>/dev/null
 fi
