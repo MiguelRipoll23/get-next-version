@@ -9,6 +9,8 @@ import {
   MINOR_LABELS,
   NEW_BUILD_FOR_PRERELEASE,
   NO_CHANGES_FOUND,
+  NO_MATCHING_LABELS,
+  NO_MERGED_PRS,
   NONE,
   PATCH,
   PATCH_LABELS,
@@ -117,6 +119,10 @@ async function getKindByPullRequestsLabels(
   const mergedPullRequests: PullRequest[] =
     await getMergedPullRequestsFilteredByCreated(tagCreatedAt, majorLabels)
 
+  if (mergedPullRequests.length === 0) {
+    throw new Error(NO_MERGED_PRS)
+  }
+
   for (const mergedPullRequest of mergedPullRequests) {
     const { title, labels } = mergedPullRequest
 
@@ -139,6 +145,12 @@ async function getKindByPullRequestsLabels(
     }
 
     logPullRequestTitleWithEmoji('🚫', title)
+  }
+
+  if (kind === UNKNOWN) {
+    throw new Error(
+      `${NO_MATCHING_LABELS}\nConfigured major labels: ${majorLabels.join(', ')}\nConfigured minor labels: ${minorLabels.join(', ')}\nConfigured patch labels: ${patchLabels.join(', ')}`
+    )
   }
 
   return kind
@@ -169,7 +181,10 @@ function getVersionNameWithoutPrerelease(version: SemVer): string {
   return version.format()
 }
 
-function applyChannelAndFormat(version: SemVer, channel: string): string {
+export function applyChannelAndFormat(
+  version: SemVer,
+  channel: string
+): string {
   if (channel === STABLE) {
     version.prerelease = []
   } else {

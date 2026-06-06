@@ -3,7 +3,6 @@ import * as github from '@actions/github'
 import { GitHub } from '@actions/github/lib/utils'
 import {
   GITHUB_TOKEN,
-  NO_RELEASES_FOUND,
   NOT_FOUND,
   OCTOKIT_NOT_INITIALIZED,
   PULL_REQUESTS_BASE_BRANCH,
@@ -21,7 +20,7 @@ export function setupOctokit(): void {
   octokit = github.getOctokit(token)
 }
 
-export async function getLatestTag(): Promise<Tag> {
+export async function getLatestTag(): Promise<Tag | null> {
   if (octokit === null) throw new Error(OCTOKIT_NOT_INITIALIZED)
 
   const { context } = github
@@ -34,17 +33,14 @@ export async function getLatestTag(): Promise<Tag> {
     })
 
     if (response.data.length === 0) {
-      throw new Error(NO_RELEASES_FOUND)
+      return null
     }
 
     return response.data[0]
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message === NO_RELEASES_FOUND) {
-        throw error
-      }
       if (error.message.includes(NOT_FOUND)) {
-        throw new Error(NO_RELEASES_FOUND, { cause: error })
+        return null
       }
       throw new Error(RELEASES_LISTING_FAILED + ' (' + error.message + ')', {
         cause: error
