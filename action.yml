@@ -21,6 +21,11 @@ inputs:
     description:
       'Create a new build if version name contains a prerelease identifier'
 
+  default-initial-version:
+    description:
+      'Default version to use when no releases exist (must be semver-valid)'
+    default: '1.0.0'
+
   pull_requests_base_branch:
     default: ''
     description: 'Base branch used during pull requests search'

@@ -34754,6 +34754,8 @@ function getIDToken(aud) {
  */
 
 //# sourceMappingURL=core.js.map
+// EXTERNAL MODULE: ./node_modules/semver/index.js
+var semver = __nccwpck_require__(2088);
 ;// CONCATENATED MODULE: ./node_modules/@actions/github/lib/context.js
 
 
@@ -39074,7 +39076,6 @@ function getOctokit(token, options, ...additionalPlugins) {
 const GITHUB_TOKEN = 'github-token';
 const OCTOKIT_NOT_INITIALIZED = 'octokit not initialized';
 const NOT_FOUND = 'Not Found';
-const NO_RELEASES_FOUND = 'No releases found';
 const RELEASES_LISTING_FAILED = 'Releases listing failed';
 const PULL_REQUESTS_BASE_BRANCH = 'pull_requests_base_branch';
 const REFS_HEADS = 'refs/heads/';
@@ -39100,17 +39101,14 @@ async function getLatestTag() {
             per_page: 1
         });
         if (response.data.length === 0) {
-            throw new Error(NO_RELEASES_FOUND);
+            return null;
         }
         return response.data[0];
     }
     catch (error) {
         if (error instanceof Error) {
-            if (error.message === NO_RELEASES_FOUND) {
-                throw error;
-            }
             if (error.message.includes(NOT_FOUND)) {
-                throw new Error(NO_RELEASES_FOUND, { cause: error });
+                return null;
             }
             throw new Error(RELEASES_LISTING_FAILED + ' (' + error.message + ')', {
                 cause: error
@@ -39157,8 +39155,6 @@ async function getMergedPullRequestsFilteredByCreated(createdAt, stopOnLabels = 
     }
 }
 
-// EXTERNAL MODULE: ./node_modules/semver/index.js
-var semver = __nccwpck_require__(2088);
 ;// CONCATENATED MODULE: ./src/constants/version-constants.ts
 const INVALID_VERSION_NAME = 'Invalid version name (must be semver-valid)';
 const MAJOR_LABELS = 'major-labels';
@@ -39166,6 +39162,9 @@ const MINOR_LABELS = 'minor-labels';
 const PATCH_LABELS = 'patch-labels';
 const CHANNEL = 'channel';
 const NEW_BUILD_FOR_PRERELEASE = 'new-build-for-prerelease';
+const DEFAULT_INITIAL_VERSION = 'default-initial-version';
+const NO_MERGED_PRS = 'No merged pull requests found since latest tag';
+const NO_MATCHING_LABELS = 'No pull requests with matching labels found since latest tag';
 const UNKNOWN = 'unknown';
 const NONE = 'none';
 const MAJOR = 'major';
@@ -39247,6 +39246,9 @@ async function getKindByPullRequestsLabels(tagCreatedAt) {
     const minorLabels = getLabels(MINOR_LABELS);
     const patchLabels = getLabels(PATCH_LABELS);
     const mergedPullRequests = await getMergedPullRequestsFilteredByCreated(tagCreatedAt, majorLabels);
+    if (mergedPullRequests.length === 0) {
+        throw new Error(NO_MERGED_PRS);
+    }
     for (const mergedPullRequest of mergedPullRequests) {
         const { title, labels } = mergedPullRequest;
         if (hasLabel(labels, majorLabels)) {
@@ -39267,6 +39269,9 @@ async function getKindByPullRequestsLabels(tagCreatedAt) {
             continue;
         }
         logPullRequestTitleWithEmoji('🚫', title);
+    }
+    if (kind === UNKNOWN) {
+        throw new Error(`${NO_MATCHING_LABELS}\nConfigured major labels: ${majorLabels.join(', ')}\nConfigured minor labels: ${minorLabels.join(', ')}\nConfigured patch labels: ${patchLabels.join(', ')}`);
     }
     return kind;
 }
@@ -39327,6 +39332,7 @@ function getPrereleaseVersionName(version, channel) {
 
 
 
+
 async function run() {
     try {
         await runAction();
@@ -39343,6 +39349,18 @@ async function run() {
 async function runAction() {
     setupOctokit();
     const latestTag = await getLatestTag();
+    if (latestTag === null) {
+        const defaultVersion = getInput(DEFAULT_INITIAL_VERSION);
+        const parsed = semver.parse(defaultVersion);
+        if (parsed === null) {
+            throw new Error(`Invalid default initial version: ${defaultVersion} (must be semver-valid)`);
+        }
+        const channel = getInput(CHANNEL, { required: true });
+        const version = applyChannelAndFormat(parsed, channel);
+        info('No releases found, using default initial version: ' + version);
+        setOutput(NEXT_VERSION, version);
+        return;
+    }
     const latestTagName = latestTag.tag_name;
     info('Latest tag name: ' + latestTagName);
     const newTagName = await getNextVersion(latestTag);
