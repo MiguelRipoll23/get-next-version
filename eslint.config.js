@@ -1,5 +1,6 @@
 import js from '@eslint/js'
 import tseslint from 'typescript-eslint'
+import jestPlugin from 'eslint-plugin-jest'
 import prettierRecommended from 'eslint-plugin-prettier/recommended'
 import globals from 'globals'
 import { fileURLToPath } from 'url'
@@ -63,6 +64,13 @@ export default tseslint.config(
       '@typescript-eslint/no-useless-constructor': 'error',
       '@typescript-eslint/prefer-for-of': 'warn',
       '@typescript-eslint/prefer-function-type': 'warn'
+    }
+  },
+  {
+    files: ['__tests__/**/*.ts'],
+    plugins: { jest: jestPlugin },
+    rules: {
+      ...jestPlugin.configs['flat/recommended'].rules
     }
   },
   {
