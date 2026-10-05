@@ -36038,7 +36038,7 @@ async function getLatestTag() {
         throw error;
     }
 }
-async function getMergedPullRequestsFilteredByCreated(createdAt, stopOnLabels = []) {
+async function getMergedPullRequestsFilteredByMerged(mergedAt, stopOnLabels = []) {
     if (octokit === null)
         throw new Error(OCTOKIT_NOT_INITIALIZED);
     const { context } = github;
@@ -36048,7 +36048,7 @@ async function getMergedPullRequestsFilteredByCreated(createdAt, stopOnLabels = 
     if (base.length === 0) {
         base = ref.replace(REFS_HEADS, '');
     }
-    const query = `repo:${owner}/${repo} is:pr is:merged base:${base} created:>=${createdAt}`;
+    const query = `repo:${owner}/${repo} is:pr is:merged base:${base} merged:>=${mergedAt}`;
     debug('Query: ' + query);
     try {
         const response = (await octokit.paginate(octokit.rest.search.issuesAndPullRequests, { q: query, per_page: 100 }, (pageResponse, done) => {
@@ -36160,7 +36160,7 @@ async function getKindByPullRequestsLabels(tagCreatedAt) {
     const majorLabels = getLabels(MAJOR_LABELS);
     const minorLabels = getLabels(MINOR_LABELS);
     const patchLabels = getLabels(PATCH_LABELS);
-    const mergedPullRequests = await getMergedPullRequestsFilteredByCreated(tagCreatedAt, majorLabels);
+    const mergedPullRequests = await getMergedPullRequestsFilteredByMerged(tagCreatedAt, majorLabels);
     if (mergedPullRequests.length === 0) {
         throw new Error(NO_MERGED_PRS);
     }

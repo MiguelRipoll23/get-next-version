@@ -21,7 +21,7 @@ import {
 } from '../constants/version-constants.js'
 import { PullRequest } from '../interfaces/pull-request-interface.js'
 import { Label } from '../interfaces/label-interface.js'
-import { getMergedPullRequestsFilteredByCreated } from './github.js'
+import { getMergedPullRequestsFilteredByMerged } from './github.js'
 import { Tag } from '../interfaces/tag-interface.js'
 import { SemVer } from 'semver'
 
@@ -117,7 +117,7 @@ async function getKindByPullRequestsLabels(
   const patchLabels = getLabels(PATCH_LABELS)
 
   const mergedPullRequests: PullRequest[] =
-    await getMergedPullRequestsFilteredByCreated(tagCreatedAt, majorLabels)
+    await getMergedPullRequestsFilteredByMerged(tagCreatedAt, majorLabels)
 
   if (mergedPullRequests.length === 0) {
     throw new Error(NO_MERGED_PRS)
