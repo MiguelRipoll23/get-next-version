@@ -50,8 +50,8 @@ export async function getLatestTag(): Promise<Tag | null> {
   }
 }
 
-export async function getMergedPullRequestsFilteredByCreated(
-  createdAt: string,
+export async function getMergedPullRequestsFilteredByMerged(
+  mergedAt: string,
   stopOnLabels: string[] = []
 ): Promise<PullRequest[]> {
   if (octokit === null) throw new Error(OCTOKIT_NOT_INITIALIZED)
@@ -66,7 +66,7 @@ export async function getMergedPullRequestsFilteredByCreated(
     base = ref.replace(REFS_HEADS, '')
   }
 
-  const query = `repo:${owner}/${repo} is:pr is:merged base:${base} created:>=${createdAt}`
+  const query = `repo:${owner}/${repo} is:pr is:merged base:${base} merged:>=${mergedAt}`
   core.debug('Query: ' + query)
 
   try {
