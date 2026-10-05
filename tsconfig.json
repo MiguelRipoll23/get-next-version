@@ -20,5 +20,6 @@
     "declarationMap": false,
     "pretty": true
   },
+  "include": ["./src/**/*"],
   "exclude": ["./dist", "./node_modules", "./__tests__", "./coverage"]
 }
